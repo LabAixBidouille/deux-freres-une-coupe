@@ -28,14 +28,12 @@ TITRE = "Deux frères, une coupe"
 AUTEURS = "Aylan et Adam"
 
 SYNOPSIS = (
-    "Un soir d’été, devant la finale de la Coupe du monde, Adam fait une promesse : un jour, lui aussi, "
-    "il soulèvera la coupe. Le lendemain, il entraîne son frère Aylan dans la cour, avec un ballon "
-    "dégonflé et deux poubelles pour buts.\n\n"
-    "Des années plus tard, chacun tente sa chance. Aylan doit se faire une place face à Roberto, un "
-    "gardien qui ne lui laisse rien passer. Adam joue sous le regard d’un recruteur de l’OM, lui qui a "
-    "un maillot du PSG accroché dans sa chambre.\n\n"
-    "Lance le dé : il décidera du parcours de chaque frère et de la façon dont leurs chemins se "
-    "retrouvent."
+    "Dans une cour d’Aix-en-Provence, deux frères jouent au foot entre deux poubelles. Leur ballon est vieux "
+    "et dégonflé, mais leurs rêves, eux, ne cessent de grandir.\n\n"
+    "Adam rêve de soulever un jour la Coupe du monde. Aylan, qui préférait autrefois le dessin, découvre à "
+    "son tour le plaisir de jouer. Ensemble, ils s’entraînent, progressent et s’encouragent. Mais sur le "
+    "chemin qui mène aux grands stades, tout ne se passe pas toujours comme prévu…\n\n"
+    "Une sélection, une rencontre, un geste : parfois, il suffit d’un instant pour changer une histoire."
 )
 
 AVERTISSEMENT_COURT = "Fiction librement inspirée du monde du football"
