@@ -163,7 +163,10 @@ def construire():
     # Les bandes de la marge se suivent : chacune couvre son bloc entier, de l'entrée de son premier chapitre
     # jusqu'au début du bloc suivant (la dernière jusqu'au bas des titres des fins), avec son texte au milieu
     marge, medaillons = [], []
-    debuts = [pos[premier][1] - 60 for premier, _, _, _ in PARCOURS]
+    # La bande des fins part du centre du dernier maillot bleu (le chapitre 10), les autres juste au-dessus de
+    # leur premier maillot
+    debuts = [pos[premier][1] if couleur(premier) == BLEU and premier == "10" else pos[premier][1] - 60
+              for premier, _, _, _ in PARCOURS]
     for i, (premier, dernier, texte, coul) in enumerate(PARCOURS):
         haut = debuts[i]
         bas = debuts[i + 1] - 16 if i + 1 < len(PARCOURS) else pos[dernier][1] + 92

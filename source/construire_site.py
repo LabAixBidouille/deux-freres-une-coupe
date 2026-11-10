@@ -385,7 +385,13 @@ tw-story:has(.garde) { padding-top: 0; padding-bottom: 0; }
 .garde .secondaires tw-link, .garde .secondaires .enchantment-link { border: none; font-weight: 600; color: var(--encre-douce); transition: color 0.2s ease; }
 .garde .secondaires tw-link:hover { color: var(--bleu); }
 .garde .secondaires .point { display: inline-block; width: 2px; height: 1em; margin: 0.15em 0.9em 0; transform: skewX(-20deg); background: var(--or); }
-.garde .mention { font-size: 0.78em; font-style: italic; color: var(--gris); }
+/* La mention, en note de bas de page de la couverture */
+.garde { position: relative; }
+.garde .mention { font-size: 0.8em; font-style: italic; color: var(--gris); text-align: center; }
+@media (min-width: 861px) {
+  .garde .mention { position: absolute; left: 0; right: 0; bottom: 1.4vh; font-size: clamp(11px, 1.5vh, 14px); }
+}
+@media (max-width: 860px) { .garde .mention { display: block; margin-top: 1em; } }
 @media (max-width: 860px) {
   .garde { min-height: 0; grid-template-columns: minmax(0, 1fr); gap: 1.2em; padding-top: 1em; }
   .garde-image img { height: auto; width: 100%; }
@@ -446,9 +452,9 @@ tw-story:has(.garde) { padding-top: 0; padding-bottom: 0; }
   filter: url(#tremble);
 }
 .conditions .tirage + .tirage { border-top: none; }
-/* Le ballon et sa légende, centrés dans la place laissée à droite des choix */
-.de:not(.conditions) .de-texte { flex: none; }
-.de:not(.conditions) .lancer { flex: 1; }
+/* Le ballon et sa légende au bout de la case, centrés dans une zone fixe, à égale distance du bord */
+.de:not(.conditions) .lancer { flex: none; width: 8.5em; align-self: center; }
+@media (max-width: 600px) { .de:not(.conditions) .lancer { width: auto; } }
 
 /* La couverture tient toujours dans l'écran, sans défiler : la page fait la hauteur de la fenêtre, l'image ne
    la dépasse jamais, et le texte de droite prend une taille proportionnelle à cette hauteur */
@@ -639,8 +645,8 @@ def passage_garde():
         f'<div class="commencer">{lien("Commencer l’histoire", "Prologue")}</div>{SEPARATEUR}'
         f'<div class="secondaires">{lien("Comment est née cette histoire", "Comment est née cette histoire")}'
         f'<span class="point"></span>{lien("L’arbre de l’histoire", "L’arbre de l’histoire")}</div>'
-        f'<span class="mention">{AVERTISSEMENT_COURT}</span>'
-        "</div></div>"
+        "</div>"
+        f'<span class="mention">{AVERTISSEMENT_COURT}</span></div>'
     )
 
 
