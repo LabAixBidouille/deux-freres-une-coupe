@@ -167,7 +167,7 @@ def construire():
     for i, (premier, dernier, texte, coul) in enumerate(PARCOURS):
         haut = debuts[i]
         bas = debuts[i + 1] - 16 if i + 1 < len(PARCOURS) else pos[dernier][1] + 92
-        portraits = {"1": "portrait-aylan.png", "5": "portrait-adam.png"}
+        portraits = {"1": "portrait-aylan.png", "5": "portrait-adam.png", "10": "deux-freres-transparent.png"}
         if premier in portraits:
             milieu = (haut + 44 + bas) / 2
         else:
