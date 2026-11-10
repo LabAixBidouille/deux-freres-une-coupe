@@ -159,6 +159,8 @@
 
 
 
+
+
 <meta name="robots" content="noindex, nofollow, noarchive">
 <meta content="width=device-width, initial-scale=1" name="viewport">
 <title>Deux frères, une coupe</title>
@@ -543,15 +545,18 @@ tw-story:has(.garde) { padding-top: 0; padding-bottom: 0; }
   filter: url(#tremble);
 }
 .conditions .tirage + .tirage { border-top: none; }
+/* Le ballon et sa légende, centrés dans la place laissée à droite des choix */
+.de:not(.conditions) .de-texte { flex: none; }
+.de:not(.conditions) .lancer { flex: 1; }
 
 /* La couverture tient toujours dans l'écran, sans défiler : la page fait la hauteur de la fenêtre, l'image ne
    la dépasse jamais, et le texte de droite prend une taille proportionnelle à cette hauteur */
 @media (min-width: 861px) {
   tw-story:has(.garde) { height: 100vh; overflow: hidden; }
-  .garde { height: 100vh; min-height: 0; padding: 4vh 0; }
-  .garde { grid-template-columns: minmax(0, auto) minmax(22em, 30em); gap: 3em; }
-  .garde-image img { height: 80vh; max-height: 80vh; }
-  .garde-texte { font-size: clamp(12px, 2.08vh, 20px); gap: 1.1em; }
+  .garde { height: 100vh; min-height: 0; padding: 3vh 0; }
+  .garde { grid-template-columns: minmax(0, auto) minmax(24em, 33em); gap: 3em; }
+  .garde-image img { height: 74vh; max-height: 74vh; }
+  .garde-texte { font-size: clamp(13px, 2.22vh, 22px); gap: 0.85em; }
   .garde .grand-titre { font-size: 3.7em; }
   .garde .synopsis { font-size: 0.95em; }
 }
