@@ -36,7 +36,12 @@ SYNOPSIS = (
     "Une sélection, une rencontre, un geste : parfois, il suffit d’un instant pour changer une histoire."
 )
 
-AVERTISSEMENT_COURT = "Fiction librement inspirée du monde du football"
+AVERTISSEMENT_COURT = (
+    "Cette histoire est une fiction librement inspirée de l’univers du football. Si certains clubs et "
+    "certaines compétitions existent réellement, les personnages, leurs parcours, les événements et les "
+    "dialogues ont été imaginés par Aylan et Adam lors de l’atelier « La quête du curry, une histoire dont tu "
+    "es le héros », à la bibliothèque Li Campaneto d’Aix-en-Provence, en octobre 2026."
+)
 AVERTISSEMENT = (
     "Une fiction librement inspirée du monde du football. Les clubs et les compétitions cités existent, "
     "mais les personnages, les situations et les paroles sont entièrement imaginaires. Ce livre n’est "
@@ -385,11 +390,22 @@ tw-story:has(.garde) { padding-top: 0; padding-bottom: 0; }
 .garde .secondaires tw-link, .garde .secondaires .enchantment-link { border: none; font-weight: 600; color: var(--encre-douce); transition: color 0.2s ease; }
 .garde .secondaires tw-link:hover { color: var(--bleu); }
 .garde .secondaires .point { display: inline-block; width: 2px; height: 1em; margin: 0.15em 0.9em 0; transform: skewX(-20deg); background: var(--or); }
-/* La mention, en note de bas de page de la couverture */
+/* La mention, dans une bande de bas de page sur toute la largeur de la couverture */
 .garde { position: relative; }
-.garde .mention { font-size: 0.8em; font-style: italic; color: var(--gris); text-align: center; }
+.garde .mention {
+  display: block;
+  padding: 0.7em 1.5em;
+  background: #f1f3f7;
+  border-top: 2px solid var(--bleu);
+  font-size: 0.8em;
+  line-height: 1.45;
+  font-style: italic;
+  color: var(--encre-douce);
+  text-align: center;
+}
 @media (min-width: 861px) {
-  .garde .mention { position: absolute; left: 0; right: 0; bottom: 1.4vh; font-size: clamp(11px, 1.5vh, 14px); }
+  .garde .mention { position: absolute; bottom: 0; left: calc(50% - 50vw); width: 100vw; box-sizing: border-box;
+                    padding: 1.1vh max(1.5em, calc(50vw - 40em)); font-size: clamp(11px, 1.55vh, 15px); }
 }
 @media (max-width: 860px) { .garde .mention { display: block; margin-top: 1em; } }
 @media (max-width: 860px) {
@@ -453,17 +469,18 @@ tw-story:has(.garde) { padding-top: 0; padding-bottom: 0; }
 }
 .conditions .tirage + .tirage { border-top: none; }
 /* Le ballon et sa légende au bout de la case, centrés dans une zone fixe, à égale distance du bord */
-.de:not(.conditions) .lancer { flex: none; width: 8.5em; align-self: center; }
-@media (max-width: 600px) { .de:not(.conditions) .lancer { width: auto; } }
+.de:not(.conditions) .lancer { flex: none; width: 8.5em; align-self: center; padding-top: 1.9em; }
+@media (max-width: 600px) { .de:not(.conditions) .lancer { width: auto; padding-top: 0; } }
 
 /* La couverture tient toujours dans l'écran, sans défiler : la page fait la hauteur de la fenêtre, l'image ne
    la dépasse jamais, et le texte de droite prend une taille proportionnelle à cette hauteur */
 @media (min-width: 861px) {
   tw-story:has(.garde) { height: 100vh; overflow: hidden; }
-  .garde { height: 100vh; min-height: 0; padding: 3vh 0; }
-  .garde { grid-template-columns: minmax(0, auto) minmax(24em, 33em); gap: 3em; }
-  .garde-image img { height: 74vh; max-height: 74vh; }
-  .garde-texte { font-size: clamp(13px, 2.22vh, 22px); gap: 0.85em; }
+  .garde { height: 100vh; min-height: 0; }
+  tw-passage:has(.garde) { max-width: 1440px; }
+  .garde { grid-template-columns: auto auto; gap: 2.6em; padding: 1vh 0 9vh; }
+  .garde-image img { height: 68vh; max-height: 68vh; }
+  .garde-texte { width: 31em; font-size: clamp(14px, 2.3vh, 24px); gap: 0.75em; }
   .garde .grand-titre { font-size: 3.7em; }
   .garde .synopsis { font-size: 0.95em; }
 }
