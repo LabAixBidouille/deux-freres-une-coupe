@@ -519,8 +519,8 @@ tw-story:has(.garde) { padding-top: 0; padding-bottom: 0; }
      haut et son bas sont alignés sur le haut et le bas du texte, et le texte prend toute la largeur restante */
   tw-story:has(.garde) { padding-left: 1.6vw; padding-right: 2.4vw; }
   tw-passage:has(.garde) { max-width: none; width: 100%; align-self: stretch; }
-  .garde { grid-template-columns: auto auto; gap: 3vw; align-items: start; align-content: center;
-           justify-content: space-between; padding: 1vh 0 9vh; }
+  .garde { grid-template-columns: auto auto; gap: 2.5vw; align-items: start; align-content: center;
+           justify-content: start; padding: 1vh 0 9vh; }
   .garde-image img { height: 70vh; max-height: 86vh; max-width: none; width: auto; }
   .garde-texte { width: 30em; font-size: clamp(14px, 2.45vh, 26px); gap: 0.65em; }
 }
@@ -565,31 +565,40 @@ DE_VIRTUEL = (
 
 SCRIPT = """
 
-// Couverture : l'image prend exactement la hauteur du bloc de texte (haut contre haut, bas contre bas) et le
-// texte prend la largeur que l'image lui laisse. On essaie des largeurs de texte de la plus étroite à la plus
-// large et on garde la première où image et texte tiennent ensemble dans l'écran (la plus grande image) ; si
-// aucune ne tient, le texte est réduit d'un cran.
+// Couverture : l'image prend exactement la hauteur du bloc de texte (haut contre haut, bas contre bas), avec
+// un petit écart fixe entre les deux. On cherche la plus grande taille de texte pour laquelle image et texte
+// tiennent ensemble dans la largeur et sous la bande du bas ; le texte prend alors toute la largeur restante.
 function ajusterGarde() {
   var garde = document.querySelector('.garde');
   if (!garde) return;
   var texte = garde.querySelector('.garde-texte'), image = garde.querySelector('.garde-image img');
-  texte.style.fontSize = '';
-  if (window.innerWidth <= 860) { image.style.height = ''; texte.style.width = ''; return; }
+  var bande = garde.querySelector('.mention');
+  if (window.innerWidth <= 860) { image.style.height = ''; texte.style.width = ''; texte.style.fontSize = ''; return; }
   var ecart = parseFloat(getComputedStyle(garde).columnGap) || 0;
-  var dispo = garde.clientWidth - ecart - 4;
-  var hauteurMax = window.innerHeight * 0.86;
-  var taille = parseFloat(getComputedStyle(texte).fontSize);
-  for (var echelle = 1; echelle > 0.6; echelle -= 0.04) {
-    texte.style.fontSize = (taille * echelle) + 'px';
-    for (var largeur = dispo * 0.36; largeur <= dispo * 0.68; largeur += 6) {
+  var dispo = garde.clientWidth - ecart - 2;
+  var hauteurMax = window.innerHeight - (bande ? bande.offsetHeight : 0) - window.innerHeight * 0.06;
+  // Pour une taille donnée, la largeur de texte la plus grande qui tient (ou rien si aucune ne tient)
+  function essayer(taille) {
+    texte.style.fontSize = taille + 'px';
+    var meilleure = null;
+    for (var largeur = dispo * 0.3; largeur <= dispo * 0.72; largeur += 8) {
       texte.style.width = largeur + 'px';
       var hauteur = texte.getBoundingClientRect().height;
-      if (largeur + hauteur <= dispo && hauteur <= hauteurMax) {
-        image.style.height = hauteur + 'px';
-        return;
-      }
+      if (largeur + hauteur <= dispo && hauteur <= hauteurMax) meilleure = { largeur: largeur, hauteur: hauteur };
     }
+    return meilleure;
   }
+  var bas = 11, haut = 34, retenu = null, tailleRetenue = bas;
+  for (var i = 0; i < 9; i++) {
+    var milieu = (bas + haut) / 2, r = essayer(milieu);
+    if (r) { retenu = r; tailleRetenue = milieu; bas = milieu; } else { haut = milieu; }
+  }
+  if (!retenu) { retenu = essayer(11); tailleRetenue = 11; }
+  texte.style.fontSize = tailleRetenue + 'px';
+  // Le texte prend toute la largeur que l'image lui laisse
+  texte.style.width = (dispo - (retenu ? retenu.hauteur : 0)) + 'px';
+  var finale = texte.getBoundingClientRect().height;
+  image.style.height = Math.min(finale, dispo - texte.getBoundingClientRect().width) + 'px';
 }
 var attenteGarde = null;
 function planifierGarde() { cancelAnimationFrame(attenteGarde); attenteGarde = requestAnimationFrame(ajusterGarde); }
