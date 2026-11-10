@@ -1,14 +1,16 @@
 #!/usr/bin/env python3
-"""Construit le livret imprimable du « Voleur de diamants » à partir de source/texte.md.
+"""Construit le livret imprimable de « Deux frères, une coupe » à partir de source/texte.md.
 
 Même chaîne que les autres livres de l'atelier (pages de 124 × 186 mm, renvois avec le numéro de page,
-imposition sur A4), avec la mise en forme du site de Nina : titres en Fraunces, texte en Literata,
-violet des campanules, rose des diamants du chat. Chaque chapitre s'ouvre sur son image au format 3:2,
-le numéro posé à cheval sur son bord bas ; les tirages sont dans un encart rose pâle.
+imposition sur A4), avec la mise en forme du site d'Aylan et d'Adam : titres en Anton, texte en Barlow,
+encre noire et bleu des Bleus, or de la couverture. Chaque chapitre s'ouvre sur son image entière, le
+numéro sur une étiquette bleue en biais à cheval sur son bord bas ; les tirages sont dans une case au trait
+noir, les faces du dé sur des hachures bleues ; les quatre fins du chapitre 10 forment un tableau à double
+entrée.
 
 Produit trois PDF dans le dossier Impression du livre :
-- LeVoleurDeDiamants_Livret_lecture.pdf : les pages dans l'ordre de lecture ;
-- LeVoleurDeDiamants_Livret_A4_bord_court.pdf et _bord_long.pdf : les pages imposées deux par deux sur
+- DeuxFreresUneCoupe_Livret_lecture.pdf : les pages dans l'ordre de lecture ;
+- DeuxFreresUneCoupe_Livret_A4_bord_court.pdf et _bord_long.pdf : les pages imposées deux par deux sur
   A4 paysage, avec lignes de coupe et de pliure, pour une impression recto verso pliée en cahier.
 
 Nécessite Google Chrome, pdftotext (poppler) et le module Python pypdf.
@@ -25,122 +27,146 @@ from PIL import Image
 from pypdf import PageObject, PdfReader, PdfWriter, Transformation
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from construire_site import (AUTRICE, CAMPANULE, CHOIX, CITATION, CONTEXTE, RENVOI, SYNOPSIS, TITRE,  # noqa: E402
-                             illustration, lire_chapitres)
+from construire_site import (AUTEURS, AVERTISSEMENT, CITATION, CONTEXTE, SYNOPSIS, TITRE,  # noqa: E402
+                             illustration, lire_chapitres, lire_choix)
 
 RACINE = Path(__file__).resolve().parent.parent
 IMPRESSION = RACINE.parent / "Impression"
-NOM = "LeVoleurDeDiamants"
+NOM = "DeuxFreresUneCoupe"
 
 MM = 72 / 25.4
 LARGEUR_PAGE, HAUTEUR_PAGE = 124, 186          # mm
 A4_L, A4_H = 297 * MM, 210 * MM                  # A4 paysage, en points
-ENCRE, DOUCE, VIOLET, VIOLET_FONCE, ROSE, ROSE_FONCE = "#1c2d24", "#4b5d52", "#2e6c66", "#1e4d48", "#d4664c", "#ad4a33"
+ENCRE, DOUCE, GRIS, BLEU, BLEU_FONCE, BLEU_PALE, OR = (
+    "#16181d", "#555a63", "#8c9099", "#1747d6", "#0f2f9a", "#eaf0fd", "#e8b21a")
+HACHURES = "repeating-linear-gradient(-60deg, rgba(23, 71, 214, 0.30) 0 0.35mm, transparent 0.35mm 0.95mm)"
+MENTION_COURTE = "Fiction librement inspirée de l’univers du football"
 
 
-def police(nom, fichier, italique=False):
-    return (f'@font-face {{ font-family: "{nom}"; font-weight: 300 900; {"font-style: italic; " if italique else ""}'
+def police(nom, fichier, graisse=400, italique=False):
+    return (f'@font-face {{ font-family: "{nom}"; font-weight: {graisse}; {"font-style: italic; " if italique else ""}'
             f'src: url("{(RACINE / "fonts" / fichier).as_uri()}"); }}')
 
 
-CSS = "\n".join([police("Fraunces", "Fraunces.woff2"), police("Fraunces", "Fraunces-i.woff2", True),
-                 police("Literata", "Literata.woff2"), police("Literata", "Literata-i.woff2", True)]) + f"""
+CSS = "\n".join([
+    police("Anton", "Anton-400.woff2"),
+    police("Barlow", "Barlow-400.woff2"), police("Barlow", "Barlow-500.woff2", 500),
+    police("Barlow", "Barlow-600.woff2", 600), police("Barlow", "Barlow-700.woff2", 700),
+    police("Barlow", "Barlow-400i.woff2", 400, True), police("Barlow", "Barlow-500i.woff2", 500, True),
+    police("Barlow Condensed", "BarlowCondensed-600.woff2", 600),
+    police("Barlow Condensed", "BarlowCondensed-700.woff2", 700),
+]) + f"""
 @page {{
   size: {LARGEUR_PAGE}mm {HAUTEUR_PAGE}mm;
   margin: 12mm 12mm 15mm 12mm;
-  @bottom-center {{ content: counter(page); font-family: "Fraunces"; font-size: 9pt; color: {DOUCE}; }}
+  @bottom-center {{ content: counter(page); font-family: "Barlow Condensed"; font-weight: 600; font-size: 9pt; color: {DOUCE}; }}
 }}
 @page sans-numero {{ @bottom-center {{ content: none; }} }}
 
 * {{ -webkit-print-color-adjust: exact; print-color-adjust: exact; box-sizing: border-box; }}
-html {{ font-family: "Literata", serif; font-size: 10.5pt; line-height: 1.45; color: {ENCRE}; }}
+html {{ font-family: "Barlow", sans-serif; font-size: 11pt; line-height: 1.45; color: {ENCRE}; }}
 body {{ margin: 0; }}
 p {{ margin: 0 0 0.55em; orphans: 2; widows: 2; }}
 .page-seule {{ break-before: page; }}
 .sans-numero {{ page: sans-numero; }}
 .marque {{ font-size: 1pt; color: #ffffff; }}
-h1, h2, .titre-livre, .consigne, .fin, .elan {{ font-family: "Fraunces", serif; font-variation-settings: "SOFT" 100; }}
 
-/* Couverture : l'image en hauteur telle qu'elle a été pensée, le titre posé dans son blanc du haut */
+/* Couverture : le titre dans le blanc du haut, l'image entière jusqu'au bas de la page */
 @page couverture {{ margin: 0; @bottom-center {{ content: none; }} }}
 .couverture {{ page: couverture; position: relative; height: 185.5mm; overflow: hidden; background: #fff; }}
-.couverture img {{ position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }}
-.couverture .voile {{ position: absolute; left: 0; right: 0; top: 0; height: 75mm;
-  background: linear-gradient(to bottom, rgba(16,26,38,0.72), rgba(16,26,38,0)); }}
-.couverture .entete {{ position: absolute; top: 13mm; left: 0; right: 0; text-align: center; padding: 0 8mm; }}
-.couverture .surtitre {{ font-family: "Fraunces"; font-weight: 600; font-size: 7.5pt; letter-spacing: 1.8pt;
-  text-transform: uppercase; color: #f2b39f; text-shadow: 0 0 2mm rgba(0,0,0,0.6); }}
-.couverture .titre-livre {{ font-weight: 600; font-size: 31pt; line-height: 1; color: #fff7ec; margin: 2mm 0 1.5mm;
-  font-variation-settings: "SOFT" 100, "opsz" 144; text-shadow: 0 0 4mm rgba(0,0,0,0.6); }}
-.couverture .autrice {{ font-family: "Fraunces"; font-style: italic; font-size: 13pt; color: #f6e6d4;
-  text-shadow: 0 0 3mm rgba(0,0,0,0.7); }}
+.couverture img {{ position: absolute; left: 0; right: 0; bottom: 0; width: 100%; height: auto; }}
+.couverture .entete {{ position: absolute; top: 12mm; left: 0; right: 0; text-align: center; padding: 0 8mm; }}
+.couverture .surtitre {{ font-family: "Barlow Condensed"; font-weight: 700; font-size: 7.5pt; letter-spacing: 1.8pt;
+  text-transform: uppercase; color: {BLEU}; }}
+.couverture .titre-livre {{ font-family: "Anton"; font-size: 30pt; line-height: 1.02; text-transform: uppercase;
+  color: {ENCRE}; margin: 2.5mm 0 2mm; }}
+.couverture .titre-livre span {{ display: block; color: {BLEU}; }}
+.couverture .auteurs {{ font-style: italic; font-size: 12pt; color: {DOUCE}; }}
+.couverture .mention {{ font-style: italic; font-size: 7pt; color: {GRIS}; margin-top: 2mm; }}
 
-/* Quatrième de couverture du résumé, en page 2 */
+/* Le résumé, en page 2 */
 .resume {{ display: flex; flex-direction: column; justify-content: center; height: 155mm; text-align: center; }}
-.resume p {{ font-size: 10.5pt; line-height: 1.55; }}
+.resume p {{ font-size: 11pt; line-height: 1.55; }}
 
-/* Chapitres : l'image entière, jamais recadrée, fondue sur ses bords, le numéro à cheval sur son bord bas */
-.illus {{ position: relative; margin: 0 0 7mm; }}
-.illus img {{ display: block; width: 100%; height: auto; margin: 0 auto;
-  filter: saturate(0.8) brightness(1.03);
-  -webkit-mask-image: linear-gradient(to right, transparent 0, #000 4%, #000 96%, transparent 100%),
-                      linear-gradient(to bottom, transparent 0, #000 4%, #000 92%, transparent 100%);
-  -webkit-mask-composite: source-in; }}
-.illus.seconde {{ margin: 4mm 0 2mm; break-inside: avoid; }}
-.illus img.portrait {{ width: 100%; }}
-/* Image en hauteur : en pleine page, sans marge, avant le texte du chapitre ; le numéro à cheval sur son bas */
-@page pleine {{ margin: 0; @bottom-center {{ content: none; }} }}
-.pleine-page {{ page: pleine; position: relative; height: 185.5mm; overflow: hidden; break-before: page; }}
-.pleine-page img {{ position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; filter: saturate(0.8) brightness(1.03); }}
-.pleine-page .pastille {{ bottom: 8mm; transform: translate(-50%, 0); }}
-.apres-pleine {{ break-before: page; }}
+/* Chapitres : l'image entière, jamais recadrée, le numéro sur une étiquette bleue en biais à cheval sur son bas */
+.illus {{ position: relative; margin: 0 0 8mm; }}
+.illus img {{ display: block; width: 100%; height: auto; }}
+.pastille {{ position: absolute; left: 50%; bottom: 0; transform: translate(-50%, 50%) skewX(-12deg);
+  background: {BLEU}; box-shadow: 0.8mm 0.8mm 0 {ENCRE}; padding: 0.8mm 4mm 0.6mm;
+  font-family: "Barlow Condensed"; font-weight: 700; font-size: 8.5pt; letter-spacing: 1.4pt;
+  text-transform: uppercase; color: #fff; white-space: nowrap; }}
+.pastille span {{ display: inline-block; transform: skewX(12deg); }}
+h1 {{ font-family: "Anton"; font-weight: 400; font-size: 19pt; line-height: 1.12; text-align: center; color: {ENCRE};
+  margin: 0 0 4mm; }}
+/* Chapitres resserrés, pour qu'une fin de quelques lignes ne reste pas seule sur sa page */
+.serre {{ font-size: 10.3pt; line-height: 1.38; }}
+.serre .illus {{ margin-bottom: 6.5mm; }}
+.serre h1 {{ font-size: 17pt; margin-bottom: 3mm; }}
+.serre2 {{ font-size: 9.8pt; line-height: 1.33; }}
+.serre2 p {{ margin-bottom: 0.45em; }}
 /* Une page qui commence par un titre, sans image, garde un grand blanc en haut */
 .ouvre-titre::before {{ content: ""; display: block; height: 20mm; }}
-.numero-chap {{ display: block; text-align: center; font-family: "Fraunces"; font-weight: 600; font-size: 7.5pt;
-  letter-spacing: 1.6pt; text-transform: uppercase; color: {ROSE}; margin: 2mm 0 2mm; }}
-.pastille {{ position: absolute; left: 50%; bottom: 0; transform: translate(-50%, 50%); background: #fff;
-  border-radius: 10mm; padding: 1mm 3.5mm 0.8mm; font-family: "Fraunces"; font-weight: 600; font-size: 7.5pt;
-  letter-spacing: 1.4pt; text-transform: uppercase; color: {ROSE}; box-shadow: 0 0.8mm 2.5mm rgba(173, 74, 51, 0.25); }}
-h1 {{ font-weight: 500; font-size: 18pt; line-height: 1.1; text-align: center; color: {ENCRE}; margin: 0 0 4mm; }}
 
-/* Séparateur, renvois, tirages, fin */
-.separateur {{ display: flex; align-items: center; justify-content: center; gap: 2.5mm; margin: 3mm 0 3mm; break-after: avoid; }}
-.separateur::before, .separateur::after {{ content: ""; width: 16mm; height: 0.25mm; background: linear-gradient(to right, transparent, {VIOLET}); }}
-.separateur::after {{ background: linear-gradient(to left, transparent, {VIOLET}); }}
-.separateur img {{ width: 6mm; }}
+/* Séparateur : trois traits en biais, comme les bords des cases */
+.separateur {{ display: flex; align-items: center; justify-content: center; gap: 1.2mm; margin: 3mm 0 3mm; break-after: avoid; }}
+.separateur::before, .separateur::after {{ content: ""; width: 14mm; height: 0.45mm; background: {ENCRE}; }}
+.separateur i {{ display: block; width: 1.5mm; height: 4.5mm; transform: skewX(-20deg); background: {ENCRE}; }}
+.separateur i:first-of-type {{ margin-left: 1.5mm; }}
+.separateur i:last-of-type {{ margin-right: 1.5mm; }}
+.separateur i:nth-of-type(2) {{ background: {BLEU}; }}
+.separateur i:nth-of-type(3) {{ background: {OR}; }}
+
 .suite {{ break-inside: avoid; break-before: avoid; }}
-.elan {{ text-align: center; font-style: italic; font-weight: 500; font-size: 11.5pt; color: {VIOLET_FONCE}; }}
-.elan::after {{ content: " →"; color: {ROSE}; }}
-.de {{ margin-top: 4mm; padding: 3mm 4mm 2.5mm; border-radius: 4mm; background: #eef5f2;
-  box-shadow: 0 1.5mm 4mm -1.5mm rgba(30, 77, 72, 0.35); font-size: 9.8pt; line-height: 1.38; }}
-.consigne {{ font-style: italic; font-size: 10.5pt; color: {VIOLET_FONCE}; margin: 0 0 1.5mm; }}
-.tirage {{ display: grid; grid-template-columns: 14mm 1fr; gap: 2mm; margin: 0 0 1.5mm; }}
-.tirage b {{ align-self: start; text-align: center; background: #fff; border-radius: 10mm; padding: 0.2mm 0;
-  font-family: "Fraunces"; font-weight: 600; font-size: 8.5pt; color: {ROSE_FONCE}; }}
-.tirage .renvoi {{ display: block; font-family: "Fraunces"; font-style: italic; font-weight: 500; color: {VIOLET_FONCE}; }}
-.fin {{ text-align: center; font-style: italic; font-size: 26pt; color: {VIOLET_FONCE}; margin-top: 1mm; }}
+.elan {{ text-align: center; font-family: "Barlow Condensed"; font-weight: 700; font-size: 12pt; letter-spacing: 0.5pt;
+  text-transform: uppercase; color: {BLEU}; }}
+.elan::after {{ content: " →"; color: {OR}; }}
+
+/* La case du dé : trait noir, ombre bleue, faces du dé sur des hachures bleues */
+.de {{ margin-top: 4mm; padding: 3mm 4mm 2.5mm; border: 0.5mm solid {ENCRE}; box-shadow: 1.2mm 1.2mm 0 {BLEU};
+  font-size: 10pt; line-height: 1.35; break-inside: avoid; }}
+.consigne {{ font-family: "Barlow Condensed"; font-weight: 700; font-size: 10.5pt; letter-spacing: 0.4pt;
+  text-transform: uppercase; margin: 0 0 2mm; }}
+.tirage {{ display: grid; grid-template-columns: 15mm 1fr; gap: 3mm; align-items: center; margin: 0 0 1.6mm; }}
+.tirage b {{ text-align: center; background: {HACHURES}; padding: 0.4mm 0;
+  font-family: "Barlow Condensed"; font-weight: 700; font-size: 9.5pt; color: {BLEU_FONCE}; }}
+.renvoi {{ font-family: "Barlow Condensed"; font-weight: 700; font-size: 10.5pt; letter-spacing: 0.3pt;
+  text-transform: uppercase; color: {BLEU}; }}
+/* Les fins en tableau à double entrée */
+.conditions .consigne {{ font-family: "Barlow"; font-weight: 600; font-size: 10pt; letter-spacing: 0; text-transform: none; }}
+.tableau-fins {{ display: grid; grid-template-columns: 24mm 1fr 1fr; gap: 1.5mm; margin-top: 2mm; }}
+.tableau-fins .entete {{ font-family: "Barlow Condensed"; font-weight: 600; font-size: 8.5pt; line-height: 1.2; color: {DOUCE}; }}
+.tableau-fins .col {{ text-align: center; align-self: end; }}
+.tableau-fins .ligne {{ align-self: center; }}
+.tableau-fins .croisement {{ display: flex; flex-direction: column; justify-content: center; text-align: center;
+  min-height: 12mm; background: repeating-linear-gradient(-60deg, rgba(23, 71, 214, 0.16) 0 0.35mm, transparent 0.35mm 0.95mm); }}
+.tableau-fins .croisement .renvoi {{ font-size: 9.5pt; line-height: 1.15; }}
+.fin {{ text-align: center; font-family: "Anton"; font-size: 28pt; text-transform: uppercase; letter-spacing: 1pt;
+  color: {BLEU}; text-shadow: 0.7mm 0.7mm 0 {OR}; margin-top: 1mm; }}
 
 /* Pages de contexte, de l'arbre et dos */
-.contexte h2 {{ font-weight: 500; font-size: 16pt; text-align: center; color: {ENCRE}; margin: 0 0 4mm; }}
-.contexte p {{ font-size: 9.6pt; line-height: 1.4; }}
-.dessins {{ display: flex; justify-content: space-between; align-items: flex-end; margin: 0 0 4mm; }}
+.contexte h2 {{ font-family: "Anton"; font-weight: 400; font-size: 15pt; text-transform: uppercase; text-align: center;
+  color: {ENCRE}; margin: 0 0 4mm; }}
+.contexte p {{ font-size: 9.8pt; line-height: 1.4; }}
+.dessins {{ display: flex; justify-content: space-around; align-items: flex-end; margin: 0 0 4mm; }}
 .dessins figure {{ margin: 0; text-align: center; }}
-.dessins img {{ display: block; height: 13mm; margin: 0 auto; }}
-.dessins figcaption {{ font-family: "Fraunces"; font-style: italic; font-size: 6.5pt; color: {VIOLET_FONCE}; margin-top: 0.8mm; }}
-.citation {{ font-family: "Fraunces"; font-style: italic; font-size: 12pt; line-height: 1.3; text-align: center;
-  color: {VIOLET_FONCE}; margin: 3mm 4mm 4mm; }}
-.contexte .credits {{ font-size: 8.8pt; color: {DOUCE}; }}
+.dessins img {{ display: block; height: 15mm; margin: 0 auto; }}
+.dessins figcaption {{ font-family: "Barlow Condensed"; font-weight: 600; font-size: 7pt; letter-spacing: 0.4pt;
+  text-transform: uppercase; color: {BLEU_FONCE}; margin-top: 0.8mm; }}
+.citation {{ font-style: italic; font-weight: 500; font-size: 11.5pt; line-height: 1.3; text-align: center;
+  color: {BLEU_FONCE}; margin: 3mm 4mm 4mm; }}
+.contexte .credits {{ font-size: 9pt; color: {DOUCE}; }}
 .fiches {{ display: grid; grid-template-columns: 1fr 1fr; gap: 3mm; }}
-.fiches img {{ width: 100%; display: block; }}
+.fiches img {{ width: 100%; display: block; border: 0.3mm solid {ENCRE}; }}
 .fiches .pleine {{ grid-column: 1 / -1; }}
 @page arbre {{ margin: 8mm 6mm 9mm; @bottom-center {{ content: none; }} }}
 .arbre {{ page: arbre; height: 168mm; display: flex; flex-direction: column; align-items: center; }}
 .arbre img {{ flex: 1; min-height: 0; width: 100%; object-fit: contain; }}
 .dos {{ display: flex; flex-direction: column; justify-content: flex-end; height: 156mm; text-align: center;
   font-size: 9pt; color: {DOUCE}; }}
+.dos .avertissement {{ font-style: italic; font-size: 8.5pt; margin-bottom: 4mm; }}
 """
 
-SEPARATEUR = f'<div class="separateur"><img src="{CAMPANULE}" alt=""></div>'
+SEPARATEUR = '<div class="separateur"><i></i><i></i><i></i></div>'
 
 
 def e(texte):
@@ -148,70 +174,62 @@ def e(texte):
 
 
 def cle_de(nom):
-    """Clé numérique de chaque partie : 0 et 100 pour les deux textes d'ouverture, le numéro pour un chapitre"""
-    if nom.startswith("Prologue"):
-        return 0 if nom.endswith(" I") else 100
-    return int(nom.split()[-1])
+    """Clé numérique de chaque partie : 0 pour le prologue, le numéro pour un chapitre."""
+    return 0 if nom == "Prologue" else int(nom.split()[-1])
 
 
 def renvoi(cible, pages):
-    return f"Poursuis au chapitre {cible}, page {pages.get(cible, '00')}"
+    return f"Poursuis au chapitre {cible}, page {pages.get(int(cible), '00')}"
+
+
+def tableau_des_fins(consigne, conditions, pages):
+    """Les quatre fins : le parcours d'Aylan en ligne, celui d'Adam en colonne, le renvoi au croisement."""
+    cases = {}
+    for condition, chapitre in conditions:
+        c = condition.replace("’", "'")
+        cases[("quitté" not in c, "mais pas Adam" not in c and "n'est pas devenu" not in c)] = chapitre
+    assert len(cases) == 4, conditions
+    corps = ('<div></div><div class="entete col">Adam est devenu footballeur professionnel</div>'
+             '<div class="entete col">Adam n’est pas devenu footballeur professionnel</div>')
+    for aylan, libelle in ((True, "Aylan est devenu footballeur professionnel"),
+                           (False, "Aylan a quitté le football en club")):
+        corps += f'<div class="entete ligne">{libelle}</div>'
+        for adam in (True, False):
+            n = cases[(aylan, adam)]
+            corps += (f'<div class="croisement"><span class="renvoi">Chapitre {n}</span>'
+                      f'<span class="renvoi">page {pages.get(int(n), "00")}</span></div>')
+    return (f'<div class="de conditions"><p class="consigne">{e(consigne)}</p>'
+            f'<div class="tableau-fins">{corps}</div></div>')
 
 
 def chapitre(ch, suivant, pages):
     cle = cle_de(ch["nom"])
-    classe = "page-seule" + (" serre" if cle in SERRES else "") + (" serre2" if cle in SERRES2 else "")
+    serre = (" serre" if cle in SERRES else "") + (" serre2" if cle in SERRES2 else "")
     morceaux = []
     image = RACINE / "images" / "chapitres" / f"{illustration(ch['nom'])}.jpg"
-    haut = image.exists() and Image.open(image).height > Image.open(image).width
-    pastille = "" if ch["nom"].startswith("Prologue") else f'<span class="pastille">{e(ch["numero"])}</span>'
-    if haut:
-        # L'image en hauteur occupe toute une page ; le chapitre commence là (c'est la page des renvois)
-        morceaux.append(f'<section class="pleine-page"><span class="marque">@@CH{cle}@@</span>'
-                        f'<img src="{image.as_uri()}" alt=""></section>')
-        morceaux.append(f'<section class="apres-pleine ouvre-titre{classe.replace("page-seule", "")}">')
+    if image.exists():
+        largeur, hauteur = Image.open(image).size
+        assert largeur > hauteur, f"Image en hauteur non prévue : {image.name}"
+        pastille = "" if ch["nom"] == "Prologue" else f'<span class="pastille"><span>{e(ch["numero"])}</span></span>'
+        morceaux.append(f'<section class="page-seule{serre}"><span class="marque">@@CH{cle}@@</span>'
+                        f'<div class="illus"><img src="{image.as_uri()}" alt="">{pastille}</div>')
     else:
-        sans = "" if image.exists() else " ouvre-titre"
-        morceaux.append(f'<section class="{classe}{sans}"><span class="marque">@@CH{cle}@@</span>')
-        if image.exists():
-            morceaux.append(f'<div class="illus"><img src="{image.as_uri()}" alt="">{pastille}</div>')
-    if haut and pastille:
-        # Après une image en pleine page, le numéro revient au-dessus du titre, comme un chapitre sans image
-        morceaux.append(f'<span class="numero-chap">{e(ch["numero"])}</span>')
+        morceaux.append(f'<section class="page-seule ouvre-titre{serre}"><span class="marque">@@CH{cle}@@</span>')
     morceaux.append(f'<h1>{e(ch["titre"])}</h1>')
 
-    corps, consigne, tirages, cibles, fin = [], None, [], [], False
-    for p in ch["paragraphes"]:
-        if p.startswith("- "):
-            for ligne in p.split("\n"):
-                ligne = ligne[2:].strip()
-                m = CHOIX.match(ligne)
-                if m:
-                    texte = m[2].rstrip(" .")
-                    tirages.append((m[1], texte[0].upper() + texte[1:] + "." if texte else "", int(m[3])))
-                else:
-                    cibles.append(int(RENVOI.match(ligne)[1]))
-        elif p == "FIN":
-            fin = True
-        elif p.startswith("**") and p.endswith("**"):
-            consigne = p[2:-2]
-        else:
-            corps.append(f"<p>{e(p)}</p>")
-    morceaux += corps
-    # Deuxième image du chapitre, comme sur le site : à la fin du texte, avant les choix
-    seconde = RACINE / "images" / "chapitres" / f"{illustration(ch['nom'])}b.jpg"
-    if seconde.exists():
-        haut = Image.open(seconde).height > Image.open(seconde).width
-        morceaux.append(f'<div class="illus seconde"><img class="{"portrait" if haut else ""}" src="{seconde.as_uri()}" alt=""></div>')
+    corps, consigne, tirages, conditions, cible, fin = lire_choix(ch)
+    morceaux += [f"<p>{e(p)}</p>" for p in corps]
 
     suite = []
-    if consigne:
+    if tirages:
         suite.append(f'<div class="de"><p class="consigne">{e(consigne)}</p>' + "".join(
-            f'<div class="tirage"><b>{e(n)}</b><span>{e(t)}<span class="renvoi">{e(renvoi(c, pages))}</span></span></div>'
-            for n, t, c in tirages) + "</div>")
+            f'<div class="tirage"><b>{e(faces)}</b><span class="renvoi">{e(renvoi(n, pages))}</span></div>'
+            for faces, n in tirages) + "</div>")
+    elif conditions:
+        suite.append(tableau_des_fins(consigne, conditions, pages))
     # Dans un livre, inutile d'écrire « Poursuis au chapitre suivant » : on tourne simplement la page
-    elif cibles and not (suivant is not None and cibles[0] == suivant):
-        suite += [SEPARATEUR, f'<p class="elan">{e(renvoi(cibles[0], pages))}</p>']
+    elif cible and not (suivant is not None and int(cible) == suivant):
+        suite += [SEPARATEUR, f'<p class="elan">{e(renvoi(cible, pages))}</p>']
     if fin:
         suite += [SEPARATEUR, '<div class="fin">Fin</div>']
     if suite:
@@ -228,9 +246,11 @@ def dessin(fichier, nom):
 def document(pages, blanches=0):
     couverture = (
         '<section class="couverture sans-numero">'
-        f'<img src="{(RACINE / "images/couverture.png").as_uri()}" alt=""><div class="voile"></div>'
+        f'<img src="{(RACINE / "images/couverture.jpg").as_uri()}" alt="">'
         '<div class="entete"><div class="surtitre">Une histoire dont le lecteur est le héros</div>'
-        f'<div class="titre-livre">{e(TITRE)}</div><div class="autrice">une histoire par {e(AUTRICE)}</div></div></section>'
+        '<div class="titre-livre">Deux frères,<span>une coupe</span></div>'
+        f'<div class="auteurs">une histoire par {e(AUTEURS)}</div>'
+        f'<div class="mention">{MENTION_COURTE}</div></div></section>'
         '<section class="page-seule sans-numero"><div class="resume">'
         + "".join(f"<p>{e(p)}</p>" for p in SYNOPSIS.split("\n\n")) + SEPARATEUR + "</div></section>"
     )
@@ -240,31 +260,33 @@ def document(pages, blanches=0):
                         for i, ch in enumerate(chapitres_lus))
 
     paragraphes = [q for p in CONTEXTE for q in p.split("\n\n")]
+
     def para(p):
         return f"<p>{e(p).replace('&lt;b&gt;', '<b>').replace('&lt;/b&gt;', '</b>')}</p>"
     fiches = RACINE / "images" / "fiches"
     contexte = (
         '<section class="page-seule contexte"><div class="dessins">'
-        + dessin("lapinette.png", "Lapinette") + dessin("chat-noir.png", "Le chat noir") + dessin("foret.png", "La forêt")
-        + dessin("pivert.png", "Le pivert") + dessin("chat-blanc.png", "Le chat blanc") + dessin("renard.png", "Le renard blanc")
+        + dessin("aylan.png", "Aylan") + dessin("coupe.png", "La coupe du monde")
+        + dessin("adam.png", "Adam") + dessin("but.png", "Le but")
         + '</div><h2>Comment est née cette histoire</h2>'
         + "".join(para(p) for p in paragraphes[:4])
         + f'<p class="citation">« {e(CITATION)} »</p>'
         + "".join(para(p) for p in paragraphes[4:])
-        + f'<p class="credits">Une histoire librement inspirée du récit de {e(AUTRICE)}.<br>Réalisation du livre : '
+        + f'<p class="credits">Une histoire librement inspirée du récit d’Aylan et d’Adam.<br>Réalisation du livre : '
           "Laboratoire d’Aix-périmentation et de Bidouille.</p></section>"
         '<section class="page-seule contexte"><h2>Les fiches de l’atelier</h2><div class="fiches">'
-        f'<img src="{(fiches / "fiche_recit.jpg").as_uri()}" alt="">'
-        f'<img src="{(fiches / "fiche_personnage_lapinette.jpg").as_uri()}" alt="">'
-        f'<img class="pleine" src="{(fiches / "fiche_situation_1.jpg").as_uri()}" alt="">'
+        f'<img src="{(fiches / "fiche_recit_adam.jpg").as_uri()}" alt="">'
+        f'<img src="{(fiches / "fiche_personnage_aylan.jpg").as_uri()}" alt="">'
+        f'<img class="pleine" src="{(fiches / "fiche_situation_adam.jpg").as_uri()}" alt="">'
         "</div></section>"
     )
     arbre = ('<section class="page-seule contexte arbre sans-numero"><h2>L’arbre de l’histoire</h2>'
              f'<img src="{(RACINE / "images/arbre.svg").as_uri()}" alt=""></section>')
     vides = '<section class="page-seule sans-numero">&nbsp;</section>' * blanches
     dos = ('<section class="page-seule sans-numero"><div class="dos">'
-           f"<p><b>{e(TITRE)}</b>, une histoire librement inspirée du récit imaginé par {e(AUTRICE)} pendant l’atelier "
-           "« La quête du curry, une histoire dont tu es le héros », à la bibliothèque des Deux Ormes "
+           f'<p class="avertissement">{e(AVERTISSEMENT)}</p>'
+           f"<p><b>{e(TITRE)}</b>, une histoire librement inspirée du récit imaginé par Aylan et Adam pendant l’atelier "
+           "« La quête du curry, une histoire dont tu es le héros », à la bibliothèque Li Campaneto "
            "(bibliothèques Méjanes, Aix-en-Provence), en octobre 2026.</p><p>Réalisation du livre : Laboratoire d’Aix-périmentation et de Bidouille.</p>"
            "</div></section>")
     return (f'<!doctype html><html lang="fr"><head><meta charset="utf-8"><style>{CSS}</style></head>'
@@ -289,28 +311,6 @@ def reperer_pages(pdf):
     return pages, total
 
 
-# Une page de fin de chapitre qui ne porte que quelques lignes paraît coupée : ces chapitres sont resserrés
-# (image moins haute) pour tenir sur une page de moins
-SEUIL_QUEUE = 8
-SERRES = set()
-SERRES2 = set()
-
-
-def queues_courtes(pdf, pages):
-    debuts = sorted((page, cle) for cle, page in pages.items())
-    courtes = set()
-    for (debut, cle), (suivant, _) in zip(debuts, debuts[1:]):
-        fin = suivant - 1
-        if fin <= debut:
-            continue
-        texte = subprocess.run(["pdftotext", "-f", str(fin), "-l", str(fin), str(pdf), "-"],
-                               capture_output=True, text=True, check=True).stdout
-        lignes = [l for l in texte.splitlines() if l.strip() and not l.strip().isdigit()]
-        if len(lignes) <= SEUIL_QUEUE:
-            courtes.add(cle)
-    return courtes
-
-
 def stabiliser(source, pdf, pages):
     for _ in range(5):
         source.write_text(document(pages), encoding="utf-8")
@@ -322,23 +322,61 @@ def stabiliser(source, pdf, pages):
     raise SystemExit("Les numéros de page ne se stabilisent pas.")
 
 
+def queues_courtes(pdf, pages, seuil=6):
+    """Chapitres dont la dernière page ne porte que quelques lignes (à surveiller à la relecture)."""
+    debuts = sorted((page, cle) for cle, page in pages.items())
+    courtes = []
+    for (debut, cle), (suivant, _) in zip(debuts, debuts[1:]):
+        fin = suivant - 1
+        if fin <= debut:
+            continue
+        texte = subprocess.run(["pdftotext", "-f", str(fin), "-l", str(fin), str(pdf), "-"],
+                               capture_output=True, text=True, check=True).stdout
+        lignes = [l for l in texte.splitlines() if l.strip() and not l.strip().isdigit()]
+        if len(lignes) <= seuil:
+            courtes.append(cle)
+    return courtes
+
+
+def remplissage(pdf, n):
+    """Part de la hauteur utile de la page n occupée par le contenu (0 à 1)."""
+    ppm = subprocess.run(["pdftoppm", "-r", "30", "-gray", "-f", str(n), "-l", str(n), str(pdf)],
+                         capture_output=True, check=True).stdout
+    entete = ppm.split(b"\n", 3)
+    largeur, hauteur = map(int, entete[1].split())
+    pixels = entete[3]
+    bas_utile = int(hauteur * (1 - 15 / HAUTEUR_PAGE)) - 2      # au-dessus du numéro de page
+    lignes = [y for y in range(bas_utile) if min(pixels[y * largeur:(y + 1) * largeur]) < 200]
+    return (lignes[-1] / bas_utile) if lignes else 0
+
+
+def pages_trouees(pdf, pages, seuil=0.8):
+    """Chapitres dont une page intermédiaire est restée à moitié vide (le dernier paragraphe est parti avec
+    la case du dé sur la page suivante)."""
+    debuts = sorted((page, cle) for cle, page in pages.items())
+    trouees = []
+    for (debut, cle), (suivant, _) in zip(debuts, debuts[1:]):
+        if any(remplissage(pdf, n) < seuil for n in range(debut, suivant - 1)):
+            trouees.append(cle)
+    return trouees
+
+
+SERRES, SERRES2 = set(), set()
+
+
 def composer(dossier):
+    """Compose le livret ; les chapitres dont la fin tient en quelques lignes sont resserrés (un cran, puis
+    deux), et un resserrement qui ne sert à rien est retiré."""
     source = Path(dossier) / "livret.html"
     pdf = Path(dossier) / "livret.pdf"
-    pages = {}
-    for _ in range(6):
-        pages, total = stabiliser(source, pdf, pages)
-        courtes = queues_courtes(pdf, pages)
+    pages, total = stabiliser(source, pdf, {})
+    for _ in range(4):
+        courtes = set(queues_courtes(pdf, pages)) | set(pages_trouees(pdf, pages))
         nouvelles = (courtes - SERRES) | {c for c in courtes & SERRES if c not in SERRES2}
         if not nouvelles:
             break
         SERRES2.update(courtes & SERRES)
         SERRES.update(courtes)
-        pages = {}
-    inutiles = queues_courtes(pdf, pages) & SERRES2
-    if inutiles:
-        SERRES.difference_update(inutiles)
-        SERRES2.difference_update(inutiles)
         pages, total = stabiliser(source, pdf, {})
     blanches = (-total) % 4
     if blanches:
@@ -359,7 +397,7 @@ def traits_de_coupe(dossier):
         '<!doctype html><html><head><style>@page { size: 297mm 210mm; margin: 0; } body { margin: 0; }</style></head>'
         '<body><svg xmlns="http://www.w3.org/2000/svg" width="297mm" height="210mm" viewBox="0 0 297 210">'
         f'<g stroke="#c9c9c9" stroke-width="0.2">{"".join(coupe)}</g>'
-        f'<line x1="{pli}" y1="0" x2="{pli}" y2="210" stroke="#bcd6d0" stroke-width="0.2"/>'
+        f'<line x1="{pli}" y1="0" x2="{pli}" y2="210" stroke="#c4d2f5" stroke-width="0.2"/>'
         '</svg></body></html>', encoding="utf-8")
     pdf = Path(dossier) / "traits.pdf"
     imprimer(source, pdf)
@@ -402,7 +440,8 @@ def construire():
     total = len(PdfReader(str(lecture)).pages)
     print(f"{lecture} : {total} pages, soit {total // 4} feuilles A4 recto verso")
     print("Chapitres resserrés :", ", ".join(str(c) + ("+" if c in SERRES2 else "") for c in sorted(SERRES)) or "aucun")
-    print("Fins de chapitre encore courtes :", ", ".join(str(c) for c in sorted(queues_courtes(lecture, pages))) or "aucune")
+    print("Pages à moitié vides :", ", ".join(str(c) for c in pages_trouees(lecture, pages)) or "aucune")
+    print("Fins de chapitre de quelques lignes :", ", ".join(str(c) for c in queues_courtes(lecture, pages)) or "aucune")
     print("Pages des chapitres :", ", ".join(f"{k}→{v}" for k, v in sorted(pages.items())))
 
 
