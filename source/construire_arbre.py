@@ -28,7 +28,7 @@ RANGEES = [(50, ["Prologue"], 0), (265, ["1"], 0), (520, ["2", "3", "4"], 300), 
 FINS = {"11": "Les deux sont pros", "12": "Seul Aylan est pro", "13": "Seul Adam est pro", "14": "Aucun n’est pro"}
 # Les parcours, nommés dans la marge : (premier chapitre, dernier chapitre, texte, couleur)
 PARCOURS = [("1", "4", "LE PARCOURS D’AYLAN", GRIS), ("5", "9", "LE PARCOURS D’ADAM", BLEU),
-            ("11", "14", "LES FINS", OR)]
+            ("10", "14", "LES FINS", OR)]
 SOUS_TITRE = 78   # le titre du chapitre occupe jusqu'à cette distance sous le centre du maillot
 HAUT = 36         # haut du col du maillot
 
@@ -137,12 +137,13 @@ def construire():
                 etiquettes.append(pastille(x2, arrivee - 42, FINS[b], OR_PALE, ENCRE))
     fleches = "".join(f'<path d="M{x} {y} l-6.5 -11 h13 z"/>' for x, y in sorted(pointes))
 
+    # Les bandes de la marge se suivent : chacune couvre son bloc entier, de l'entrée de son premier chapitre
+    # jusqu'au début du bloc suivant (la dernière jusqu'au bas des titres des fins), avec son texte au milieu
     marge = []
-    for premier, dernier, texte, coul in PARCOURS:
-        # La bande couvre le bloc entier : des pastilles qui y entrent jusqu'au bas des titres, et son texte
-        # est centré sur ce bloc
-        entree = 100 if any(c in FINS or (p, c) in des for p, cs in renvois.items() for c in cs if c == premier) else 50
-        haut, bas = pos[premier][1] - entree, pos[dernier][1] + 92
+    debuts = [pos[premier][1] - 60 for premier, _, _, _ in PARCOURS]
+    for i, (premier, dernier, texte, coul) in enumerate(PARCOURS):
+        haut = debuts[i]
+        bas = debuts[i + 1] - 16 if i + 1 < len(PARCOURS) else pos[dernier][1] + 92
         milieu = (haut + bas) / 2
         marge.append(f'<rect x="34" y="{haut}" width="32" height="{bas - haut}" fill="{coul}"/>'
                      f'<text transform="translate(57,{milieu}) rotate(-90)" text-anchor="middle" font-family="Anton" '
