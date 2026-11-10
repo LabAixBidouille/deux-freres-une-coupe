@@ -77,13 +77,13 @@ p {{ margin: 0 0 0.55em; orphans: 2; widows: 2; }}
    de la page) */
 .couverture img {{ position: absolute; left: 0; right: 0; bottom: -12.5mm; width: 100%; height: auto; }}
 /* L'image de couverture prévoit un blanc en haut pour le titre et un blanc en bas pour la mention */
-.couverture .entete {{ position: absolute; top: 20mm; left: 0; right: 0; text-align: center; padding: 0 8mm; }}
+.couverture .entete {{ position: absolute; top: 15mm; left: 0; right: 0; text-align: center; padding: 0 8mm; }}
 .couverture .surtitre {{ font-family: "Barlow Condensed"; font-weight: 700; font-size: 7pt; letter-spacing: 1.8pt;
   text-transform: uppercase; color: {BLEU}; }}
-.couverture .titre-livre {{ font-family: "Anton"; font-size: 26pt; line-height: 1.02; text-transform: uppercase;
+.couverture .titre-livre {{ font-family: "Anton"; font-size: 33pt; line-height: 1.02; text-transform: uppercase;
   color: {ENCRE}; margin: 1.2mm 0 1mm; }}
 .couverture .titre-livre span {{ display: block; color: {BLEU}; }}
-.couverture .auteurs {{ font-style: italic; font-size: 10.5pt; color: {DOUCE}; }}
+.couverture .auteurs {{ font-style: italic; font-size: 12pt; color: {DOUCE}; }}
 .resume .mention {{ font-style: italic; font-size: 8.5pt; line-height: 1.4; color: {GRIS}; margin-top: 2mm; }}
 
 /* Le résumé, en page 2 */
