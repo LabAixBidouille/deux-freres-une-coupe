@@ -477,10 +477,12 @@ tw-story:has(.garde) { padding-top: 0; padding-bottom: 0; }
 @media (min-width: 861px) {
   tw-story:has(.garde) { height: 100vh; overflow: hidden; }
   .garde { height: 100vh; min-height: 0; }
-  tw-passage:has(.garde) { max-width: 1440px; }
-  .garde { grid-template-columns: auto auto; gap: 2.6em; padding: 1vh 0 9vh; }
-  .garde-image img { height: 68vh; max-height: 68vh; }
-  .garde-texte { width: 31em; font-size: clamp(14px, 2.3vh, 24px); gap: 0.75em; }
+  tw-story:has(.garde) { padding-left: 2.5vw; padding-right: 2.5vw; }
+  tw-passage:has(.garde) { max-width: 1680px; }
+  .garde { grid-template-columns: auto auto; gap: 3vw; padding: 1vh 0 9vh; }
+  .garde-image img { height: 72vh; max-height: 72vh; }
+  .garde-texte { width: 30em; font-size: clamp(14px, 2.45vh, 26px); gap: 0.65em; }
+  .garde-image img { max-width: none; }
   .garde .grand-titre { font-size: 3.7em; }
   .garde .synopsis { font-size: 0.95em; }
 }
