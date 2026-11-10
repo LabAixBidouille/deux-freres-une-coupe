@@ -386,7 +386,7 @@ tw-story:has(.garde) { padding-top: 0; padding-bottom: 0; }
 .garde .commencer tw-link:hover::before { transform: rotate(-180deg); }
 .garde .commencer tw-link:hover::after { transform: rotate(180deg); }
 /* Les deux liens secondaires, séparés par un trait en biais */
-.garde .secondaires { gap: 0; font-size: 0.95em; }
+.garde .secondaires { gap: 0; font-size: 0.95em; flex-wrap: nowrap; white-space: nowrap; }
 .garde .secondaires tw-link, .garde .secondaires .enchantment-link { border: none; font-weight: 600; color: var(--encre-douce); transition: color 0.2s ease; }
 .garde .secondaires tw-link:hover { color: var(--bleu); }
 .garde .secondaires .point { display: inline-block; width: 2px; height: 1em; margin: 0.15em 0.9em 0; transform: skewX(-20deg); background: var(--or); }
@@ -404,7 +404,7 @@ tw-story:has(.garde) { padding-top: 0; padding-bottom: 0; }
   text-align: center;
 }
 @media (min-width: 861px) {
-  .garde .mention { position: absolute; bottom: 0; left: calc(50% - 50vw); width: 100vw; box-sizing: border-box;
+  .garde .mention { position: absolute; bottom: 0; left: -1.6vw; width: 100vw; box-sizing: border-box;
                     padding: 1.1vh max(1.5em, calc(50vw - 40em)); font-size: clamp(11px, 1.55vh, 15px); }
 }
 @media (max-width: 860px) { .garde .mention { display: block; margin-top: 1em; } }
@@ -467,7 +467,45 @@ tw-story:has(.garde) { padding-top: 0; padding-bottom: 0; }
   background: repeating-linear-gradient(-60deg, rgba(23, 71, 214, 0.26) 0 1.5px, transparent 1.5px 4px);
   filter: url(#tremble);
 }
-.conditions .tirage + .tirage { border-top: none; }
+/* Les fins en tableau à double entrée : le parcours d'Aylan en ligne, celui d'Adam en colonne */
+.tableau-fins { display: grid; grid-template-columns: minmax(8em, 1.1fr) 1fr 1fr; gap: 0.45em; margin-top: 0.7em; }
+.tableau-fins .entete-col, .tableau-fins .entete-ligne {
+  font-family: "Barlow Condensed", "Arial Narrow", sans-serif;
+  font-weight: 600;
+  font-size: 0.95em;
+  line-height: 1.25;
+  letter-spacing: 0.02em;
+  color: var(--encre-douce);
+}
+.tableau-fins .entete-col { text-align: center; align-self: end; padding: 0 0.3em 0.2em; }
+.tableau-fins .entete-ligne { display: flex; align-items: center; padding-right: 0.4em; }
+.tableau-fins .croisement {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 3.2em;
+  text-align: center;
+}
+.tableau-fins .croisement::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: repeating-linear-gradient(-60deg, rgba(23, 71, 214, 0.16) 0 1.5px, transparent 1.5px 4px);
+  filter: url(#tremble);
+}
+.tableau-fins .croisement tw-link, .tableau-fins .croisement .enchantment-link {
+  font-family: "Barlow Condensed", "Arial Narrow", sans-serif;
+  font-weight: 700;
+  font-size: 1.05em;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--bleu);
+}
+.tableau-fins .croisement tw-link:hover { color: var(--bleu-fonce); }
+@media (max-width: 600px) { .tableau-fins { grid-template-columns: 6.5em 1fr 1fr; font-size: 0.9em; } }
 /* Le ballon et sa légende au bout de la case, centrés dans une zone fixe, à égale distance du bord */
 .de:not(.conditions) .lancer { flex: none; width: 8.5em; align-self: center; padding-top: 0.9em; }
 @media (max-width: 600px) { .de:not(.conditions) .lancer { width: auto; padding-top: 0; } }
@@ -477,12 +515,15 @@ tw-story:has(.garde) { padding-top: 0; padding-bottom: 0; }
 @media (min-width: 861px) {
   tw-story:has(.garde) { height: 100vh; overflow: hidden; }
   .garde { height: 100vh; min-height: 0; }
-  tw-story:has(.garde) { padding-left: 2.5vw; padding-right: 2.5vw; }
-  tw-passage:has(.garde) { max-width: 1680px; }
-  .garde { grid-template-columns: auto auto; gap: 3vw; padding: 1vh 0 9vh; }
-  .garde-image img { height: 72vh; max-height: 72vh; }
+  /* Peu de marge à gauche ; l'image prend exactement la hauteur du bloc de texte (le script la mesure), son
+     haut et son bas sont alignés sur le haut et le bas du texte, et le texte prend toute la largeur restante */
+  tw-story:has(.garde) { padding-left: 1.6vw; padding-right: 2.4vw; }
+  tw-passage:has(.garde) { max-width: none; width: 100%; align-self: stretch; }
+  .garde { grid-template-columns: auto auto; gap: 3vw; align-items: start; align-content: center;
+           justify-content: space-between; padding: 1vh 0 9vh; }
+  .garde-image img { height: 70vh; max-height: 86vh; max-width: none; width: auto; }
   .garde-texte { width: 30em; font-size: clamp(14px, 2.45vh, 26px); gap: 0.65em; }
-  .garde-image img { max-width: none; }
+}
   .garde .grand-titre { font-size: 3.7em; }
   .garde .synopsis { font-size: 0.95em; }
 }
@@ -523,6 +564,39 @@ DE_VIRTUEL = (
 )
 
 SCRIPT = """
+
+// Couverture : l'image prend exactement la hauteur du bloc de texte (haut contre haut, bas contre bas) et le
+// texte prend la largeur que l'image lui laisse. On essaie des largeurs de texte de la plus étroite à la plus
+// large et on garde la première où image et texte tiennent ensemble dans l'écran (la plus grande image) ; si
+// aucune ne tient, le texte est réduit d'un cran.
+function ajusterGarde() {
+  var garde = document.querySelector('.garde');
+  if (!garde) return;
+  var texte = garde.querySelector('.garde-texte'), image = garde.querySelector('.garde-image img');
+  texte.style.fontSize = '';
+  if (window.innerWidth <= 860) { image.style.height = ''; texte.style.width = ''; return; }
+  var ecart = parseFloat(getComputedStyle(garde).columnGap) || 0;
+  var dispo = garde.clientWidth - ecart - 4;
+  var hauteurMax = window.innerHeight * 0.86;
+  var taille = parseFloat(getComputedStyle(texte).fontSize);
+  for (var echelle = 1; echelle > 0.6; echelle -= 0.04) {
+    texte.style.fontSize = (taille * echelle) + 'px';
+    for (var largeur = dispo * 0.36; largeur <= dispo * 0.68; largeur += 6) {
+      texte.style.width = largeur + 'px';
+      var hauteur = texte.getBoundingClientRect().height;
+      if (largeur + hauteur <= dispo && hauteur <= hauteurMax) {
+        image.style.height = hauteur + 'px';
+        return;
+      }
+    }
+  }
+}
+var attenteGarde = null;
+function planifierGarde() { cancelAnimationFrame(attenteGarde); attenteGarde = requestAnimationFrame(ajusterGarde); }
+new MutationObserver(planifierGarde).observe(document.documentElement, { childList: true, subtree: true });
+window.addEventListener('resize', planifierGarde);
+document.addEventListener('load', planifierGarde, true);
+if (document.fonts) document.fonts.ready.then(planifierGarde);
 
 // Filtre du trait de crayon, utilisé par la feuille de style
 document.body.insertAdjacentHTML('beforeend', '<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><filter id="tremble" x="-6%" y="-20%" width="112%" height="140%"><feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="2" seed="3"/><feDisplacementMap in="SourceGraphic" scale="2.4" xChannelSelector="R" yChannelSelector="G"/></filter></defs></svg>');
@@ -608,6 +682,29 @@ def lire_choix(ch):
     return corps, consigne, tirages, conditions, renvoi, fin
 
 
+def tableau_des_fins(consigne, conditions, poursuis):
+    """Les quatre fins du chapitre 10 forment un tableau à double entrée : le parcours d'Aylan en ligne, celui
+    d'Adam en colonne, le renvoi au croisement. Chaque condition du texte est relue pour trouver sa case."""
+    cases = {}
+    for condition, chapitre in conditions:
+        c = condition.replace("’", "'")
+        aylan_pro = "quitté" not in c
+        adam_pro = "mais pas Adam" not in c and "n'est pas devenu" not in c
+        cases[(aylan_pro, adam_pro)] = chapitre
+    assert len(cases) == 4, f"Les fins ne forment pas un tableau complet : {conditions}"
+    entete = ('<div class="vide"></div>'
+              '<div class="entete-col">Adam est devenu footballeur professionnel</div>'
+              '<div class="entete-col">Adam n’est pas devenu footballeur professionnel</div>')
+    lignes = ""
+    for aylan_pro, libelle in ((True, "Aylan est devenu footballeur professionnel"),
+                               (False, "Aylan a quitté le football en club")):
+        lignes += (f'<div class="entete-ligne">{libelle}</div>'
+                   + "".join(f'<div class="croisement">{poursuis(cases[(aylan_pro, adam_pro)])}</div>'
+                             for adam_pro in (True, False)))
+    return (f'<div class="de conditions"><div class="de-texte"><span class="consigne">{consigne}</span>'
+            f'<div class="tableau-fins">{entete}{lignes}</div></div></div>')
+
+
 def passage_chapitre(ch):
     corps, consigne, tirages, conditions, renvoi, fin = lire_choix(ch)
     poursuis = lambda n: lien(f"Poursuis au chapitre {n}", nom_passage(n))
@@ -626,10 +723,7 @@ def passage_chapitre(ch):
         suite.append(f'<div class="de"><div class="de-texte"><span class="consigne">{consigne}</span>'
                      f'<div class="choix">{lignes}</div></div>{DE_VIRTUEL}</div>')
     elif conditions:
-        lignes = "".join(f'<span class="tirage"><span class="condition">{c}.</span>{poursuis(n)}</span>'
-                         for c, n in conditions)
-        suite.append(f'<div class="de conditions"><div class="de-texte"><span class="consigne">{consigne}</span>'
-                     f'<div class="choix">{lignes}</div></div></div>')
+        suite.append(tableau_des_fins(consigne, conditions, poursuis))
     else:
         suite.append(SEPARATEUR)
         if renvoi:
