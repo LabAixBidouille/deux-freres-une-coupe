@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """Dessine images/arbre.svg, l'arbre de « Deux frères, une coupe », et vérifie les renvois de texte.md.
 
-Chaque chapitre est un maillot numéroté : gris pour le parcours d'Aylan (le gris de son sweat), bleu pour
-celui d'Adam, or pour les quatre fins. Le prologue est le ballon. Les flèches sont tracées à angle droit,
-pointe pleine.
+L'arbre se lit de haut en bas. Chaque chapitre est un maillot numéroté, avec son titre dessous : gris pour le
+parcours d'Aylan (le gris de son sweat), bleu pour celui d'Adam, or pour les quatre fins. Le prologue est le
+ballon. Sur chaque branche, les faces du dé qui y mènent ; avant chaque fin, la condition qui l'ouvre. Les
+parcours sont nommés dans la marge de gauche. Flèches à angle droit, pointe pleine.
 
 Usage, depuis la racine du dépôt : python3 source/construire_arbre.py
 """
@@ -15,30 +16,56 @@ RACINE = Path(__file__).resolve().parent.parent
 TEXTE = RACINE / "source" / "texte.md"
 SORTIE = RACINE / "images" / "arbre.svg"
 
-ENCRE, BLEU, GRIS, OR = "#16181d", "#1747d6", "#6b6f78", "#e8b21a"
+ENCRE, BLEU, BLEU_FONCE, BLEU_PALE, GRIS, OR, OR_PALE = (
+    "#16181d", "#1747d6", "#0f2f9a", "#e3eafc", "#6b6f78", "#e8b21a", "#fbf0cc")
 
-# Colonnes de gauche à droite ; chaque colonne est centrée verticalement
-COLONNES = [["Prologue"], ["1"], ["2", "3", "4"], ["5"], ["6"], ["7", "8", "9"], ["10"], ["11", "12", "13", "14"]]
-LARGEUR, HAUTEUR = 1120, 540
-X0, PAS_X, MILIEU, PAS_Y = 70, 140, 300, 116
-LIGNE = 8  # les flèches arrivent sous les manches
+LARGEUR, HAUTEUR = 1180, 1880
+CENTRE = 640
+# Rangées de haut en bas : (ordonnée du maillot, chapitres, écart entre maillots)
+RANGEES = [(50, ["Prologue"], 0), (265, ["1"], 0), (520, ["2", "3", "4"], 300), (770, ["5"], 0),
+           (965, ["6"], 0), (1220, ["7", "8", "9"], 300), (1470, ["10"], 0), (1725, ["11", "12", "13", "14"], 270)]
+# Ce qui ouvre chaque fin, en quelques mots (les conditions du chapitre 10)
+FINS = {"11": "Les deux sont pros", "12": "Seul Aylan est pro", "13": "Seul Adam est pro", "14": "Aucun n’est pro"}
+# Les parcours, nommés dans la marge : (premier chapitre, dernier chapitre, texte, couleur)
+PARCOURS = [("1", "4", "LE PARCOURS D’AYLAN", GRIS), ("5", "9", "LE PARCOURS D’ADAM", BLEU),
+            ("11", "14", "LES FINS", OR)]
+SOUS_TITRE = 78   # le titre du chapitre occupe jusqu'à cette distance sous le centre du maillot
+HAUT = 36         # haut du col du maillot
 
 
-def lire_renvois():
+def lire_texte():
     texte = TEXTE.read_text(encoding="utf-8")
-    renvois = {}
+    titres, renvois, des = {}, {}, {}
     for bloc in re.split(r"^## ", texte, flags=re.M)[1:]:
         tete = bloc.split("\n", 1)[0]
         nom = "Prologue" if tete.startswith("Prologue") else re.match(r"Chapitre (\d+)", tete)[1]
+        titres[nom] = tete.split(". ", 1)[1].strip()
         renvois[nom] = re.findall(r"chapitre (\d+)\.?$", bloc, flags=re.M)
-    return renvois
+        for faces, cible in re.findall(r"^- (\d(?:, \d)*(?: ou \d)?) : .*?chapitre (\d+)", bloc, flags=re.M):
+            des[(nom, cible)] = faces
+    return titres, renvois, des
 
 
 def couleur(nom):
-    if nom == "Prologue":
-        return None
     n = int(nom)
     return GRIS if n <= 4 else OR if n >= 11 else BLEU
+
+
+def lignes(titre, largeur=27):
+    sortie, ligne = [], ""
+    for mot in titre.replace("'", "’").split():
+        if ligne and len(ligne) + 1 + len(mot) > largeur:
+            sortie.append(ligne)
+            ligne = mot
+        else:
+            ligne = f"{ligne} {mot}".strip()
+    return sortie + [ligne]
+
+
+def titre_svg(x, y, titre):
+    tspans = "".join(f'<tspan x="{x}" dy="{0 if i == 0 else 19}">{l}</tspan>' for i, l in enumerate(lignes(titre)))
+    return (f'<text x="{x}" y="{y + 54}" text-anchor="middle" font-family="Barlow" font-weight="600" '
+            f'font-size="16" fill="{ENCRE}">{tspans}</text>')
 
 
 def maillot(x, y, nom):
@@ -64,55 +91,76 @@ def ballon(x, y):
     except ImportError:
         donnees = (RACINE / "images" / "ballon.png").read_bytes()
     code = base64.b64encode(donnees).decode()
-    return (f'<image x="{x - 32}" y="{y - 32 + LIGNE}" width="64" height="64" '
-            f'href="data:image/png;base64,{code}"/>')
+    return f'<image x="{x - 32}" y="{y - 32}" width="64" height="64" href="data:image/png;base64,{code}"/>'
+
+
+def pastille(x, y, texte, fond, encre):
+    largeur = 18 + len(texte) * 8.4
+    return (f'<g transform="translate({x},{y}) skewX(-12)"><rect x="{-largeur / 2}" y="-13" width="{largeur}" '
+            f'height="26" fill="{fond}"/></g>'
+            f'<text x="{x}" y="{y + 6}" text-anchor="middle" font-family="Barlow Condensed" font-weight="700" '
+            f'font-size="17" letter-spacing="0.5" fill="{encre}">{texte}</text>')
+
+
+def police(fichier, nom, graisse=400):
+    code = base64.b64encode((RACINE / "fonts" / fichier).read_bytes()).decode()
+    return (f'@font-face {{ font-family: "{nom}"; font-weight: {graisse}; '
+            f'src: url(data:font/woff2;base64,{code}) format("woff2"); }}')
 
 
 def construire():
-    renvois = lire_renvois()
+    titres, renvois, des = lire_texte()
     pos = {}
-    for i, col in enumerate(COLONNES):
-        for j, nom in enumerate(col):
-            pos[nom] = (X0 + i * PAS_X, MILIEU + (j - (len(col) - 1) / 2) * PAS_Y)
+    for y, noms, ecart in RANGEES:
+        for j, nom in enumerate(noms):
+            pos[nom] = (CENTRE + (j - (len(noms) - 1) / 2) * ecart, y)
     assert set(pos) == set(renvois), f"Chapitres absents de l'arbre : {set(renvois) ^ set(pos)}"
 
-    traits, pointes = [], set()
+    traits, pointes, etiquettes = [], set(), []
     for a, cibles in renvois.items():
         for b in cibles:
             assert b in pos, f"Renvoi vers un chapitre inconnu : {a} -> {b}"
             (x1, y1), (x2, y2) = pos[a], pos[b]
-            assert x2 > x1, f"Renvoi en arrière non prévu : {a} -> {b}"
-            x1 += 32 if a == "Prologue" else 24
-            y1 += LIGNE
-            y2 += LIGNE
-            pointe = x2 - 25
-            xm = x1 + (pointe - x1) / 2
-            chemin = f"M{x1} {y1} H{xm} V{y2} H{pointe - 9}" if y1 != y2 else f"M{x1} {y1} H{pointe - 9}"
-            traits.append(f'<path d="{chemin}"/>')
-            pointes.add((pointe, y2))
-    fleches = "".join(f'<path d="M{x} {y} l-11 -6.5 v13 z"/>' for x, y in sorted(pointes))
+            assert y2 > y1, f"Renvoi en arrière non prévu : {a} -> {b}"
+            depart = y1 + SOUS_TITRE + 10
+            arrivee = y2 - HAUT - 4
+            if x1 == x2:
+                traits.append(f'<path d="M{x1} {depart} V{arrivee - 9}"/>')
+            else:
+                # Plusieurs enfants : le palier est juste sous le parent ; plusieurs parents : juste au-dessus
+                palier = depart + 30 if len(cibles) > 1 else arrivee - 40
+                traits.append(f'<path d="M{x1} {depart} V{palier} H{x2} V{arrivee - 9}"/>')
+            pointes.add((x2, arrivee))
+            if (a, b) in des:
+                etiquettes.append(pastille(x2, arrivee - 42, des[(a, b)], BLEU_PALE, BLEU_FONCE))
+            elif b in FINS:
+                etiquettes.append(pastille(x2, arrivee - 42, FINS[b], OR_PALE, ENCRE))
+    fleches = "".join(f'<path d="M{x} {y} l-6.5 -11 h13 z"/>' for x, y in sorted(pointes))
 
-    def bandeau(debut, fin, texte, coul):
-        xa, xb = X0 + debut * PAS_X - 50, X0 + fin * PAS_X + 50
-        return (f'<path d="M{xa + 8} 12 H{xb} l-8 26 H{xa} z" fill="{coul}"/>'
-                f'<text x="{(xa + xb) / 2}" y="32" text-anchor="middle" font-family="Anton" font-size="19" '
-                f'letter-spacing="1.5" fill="{"#fff" if coul != OR else ENCRE}">{texte}</text>')
+    marge = []
+    for premier, dernier, texte, coul in PARCOURS:
+        haut, bas = pos[premier][1] - 50, pos[dernier][1] + SOUS_TITRE + 10
+        milieu = (haut + bas) / 2
+        marge.append(f'<rect x="34" y="{haut}" width="32" height="{bas - haut}" fill="{coul}"/>'
+                     f'<text transform="translate(57,{milieu}) rotate(-90)" text-anchor="middle" font-family="Anton" '
+                     f'font-size="19" letter-spacing="2" fill="{"#fff" if coul != OR else ENCRE}">{texte}</text>')
 
-    police = base64.b64encode((RACINE / "fonts" / "Anton-400.woff2").read_bytes()).decode()
-    noeuds = "".join(ballon(*pos[n]) if n == "Prologue" else maillot(*pos[n], n) for n in pos)
+    noeuds = "".join((ballon(*pos[n]) if n == "Prologue" else maillot(*pos[n], n)) + titre_svg(*pos[n], titres[n])
+                     for n in pos)
     svg = (
         f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {LARGEUR} {HAUTEUR}" width="{LARGEUR}" height="{HAUTEUR}">'
-        f'<style>@font-face {{ font-family: "Anton"; src: url(data:font/woff2;base64,{police}) format("woff2"); }}</style>'
-        + bandeau(1, 2, "LE PARCOURS D’AYLAN", GRIS)
-        + bandeau(3, 5, "LE PARCOURS D’ADAM", BLEU)
-        + bandeau(7, 7, "LES FINS", OR)
+        "<style>" + police("Anton-400.woff2", "Anton") + police("Barlow-600.woff2", "Barlow", 600)
+        + police("BarlowCondensed-700.woff2", "Barlow Condensed", 700) + "</style>"
+        + "".join(marge)
         + f'<g fill="none" stroke="{BLEU}" stroke-width="3" stroke-linejoin="miter">{"".join(traits)}</g>'
         + f'<g fill="{BLEU}">{fleches}</g>'
+        + "".join(etiquettes)
         + noeuds
         + "</svg>"
     )
     SORTIE.write_text(svg, encoding="utf-8")
-    print(f"{SORTIE} : {len(pos)} étapes, {sum(len(c) for c in renvois.values())} renvois")
+    print(f"{SORTIE} : {len(pos)} étapes, {sum(len(c) for c in renvois.values())} renvois, "
+          f"{len(des)} branches au dé")
 
 
 if __name__ == "__main__":

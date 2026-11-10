@@ -396,7 +396,7 @@ tw-story:has(.garde) { padding-top: 0; padding-bottom: 0; }
 .arbre-tete { text-align: center; margin: 0.5em 0 1.5em; }
 .arbre h1 { margin: 0; font-family: "Anton", Impact, sans-serif; font-weight: 400; font-size: 2.3em; text-transform: uppercase; color: var(--encre); }
 .arbre .arbre-sous-titre { display: block; font-style: italic; color: var(--encre-douce); margin-top: 0.3em; }
-.arbre img { display: block; width: 100%; max-width: 1100px; height: auto; margin: 0 auto; }
+.arbre img { display: block; width: 100%; max-width: 960px; height: auto; margin: 0 auto; }
 
 /* Page « Comment est née cette histoire » */
 .contexte { max-width: 40em; margin: 1em auto 0; text-align: center; }
