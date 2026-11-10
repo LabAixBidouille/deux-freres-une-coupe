@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Dessine le dé à fabriquer du « Voleur de diamants » sur une page A5, dans un PDF à part.
+"""Dessine le dé à fabriquer de « Deux frères, une coupe » sur une page A5, dans un PDF à part.
 
 Patron de cube en croix, faces de 29 mm : deux faces opposées font toujours 7. Chaque face est blanche,
-bordée d'un filet rose comme l'encart du dé sur le site ; les points sont les diamants bleus de Lapinette.
-Les traits pleins violets se découpent, les pointillés roses se plient, les languettes rose pâle se collent.
+bordée d'un filet bleu comme la case du dé sur le site ; les points sont le ballon à l'encre du livre.
+Les traits pleins noirs se découpent, les pointillés bleus se plient, les languettes bleu pâle se collent.
 
-Produit Impression/LeVoleurDeDiamants_De.pdf, pour accompagner le livret. Nécessite Google Chrome.
+Produit Impression/DeuxFreresUneCoupe_De.pdf, pour accompagner le livret. Nécessite Google Chrome.
 Usage, depuis la racine du dépôt : python source/construire_de.py (avec le venv qui contient pypdf)
 """
 import sys
@@ -14,16 +14,16 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from construire_livret import CSS as CSS_LIVRET, SEPARATEUR, imprimer  # noqa: E402
-from construire_site import AUTRICE, TITRE  # noqa: E402
+from construire_site import AUTEURS, TITRE  # noqa: E402
 
 RACINE = Path(__file__).resolve().parent.parent
-SORTIE = RACINE.parent / "Impression" / "LeVoleurDeDiamants_De.pdf"
-PATTE = (RACINE / "images" / "diamant.png").as_uri()
+SORTIE = RACINE.parent / "Impression" / "DeuxFreresUneCoupe_De.pdf"
+PATTE = (RACINE / "images" / "ballon.png").as_uri()
 
 FACE = 29          # côté d'une face, en mm
 LANGUETTE = 7      # profondeur des languettes, en mm
 MARGE = 1          # marge autour du dessin, pour que les traits extérieurs ne soient pas coupés
-NUIT, OR, OR_FONCE, CREME = "#1e4d48", "#e9a594", "#d4664c", "#e4efec"
+NUIT, OR, OR_FONCE, CREME = "#16181d", "#1747d6", "#1747d6", "#eaf0fd"
 
 # Position (colonne, ligne) de chaque face dans la croix et sa valeur : A en haut, puis B, C, D
 # dans la colonne du milieu, L et R de part et d'autre de B. Opposées : A–C, B–D, L–R.
@@ -69,11 +69,11 @@ def patron():
     for (c, li), valeur in FACES.values():
         x, y = ox + c * FACE, oy + li * FACE
         dessin.append(f'<rect x="{x}" y="{y}" width="{FACE}" height="{FACE}" fill="#fff"/>')
-        # Un filet rose à l'intérieur de chaque face
+        # Un filet bleu à l'intérieur de chaque face
         dessin.append(f'<rect x="{x + 2.2}" y="{y + 2.2}" width="{FACE - 4.4}" height="{FACE - 4.4}" rx="1.6" '
                       f'fill="none" stroke="{OR}" stroke-width="0.5"/>')
-        # Un diamant bleu de Lapinette à la place de chaque point, centré sur sa position
-        taille = 7.5 if valeur < 6 else 6.4
+        # Le ballon à la place de chaque point, centré sur sa position
+        taille = 7 if valeur < 6 else 6
         for px, py in POINTS[valeur]:
             dessin.append(f'<image href="{PATTE}" x="{x + px * FACE - taille / 2:.2f}" y="{y + py * FACE - taille / 2:.2f}" '
                           f'width="{taille}" height="{taille}"/>')
@@ -123,16 +123,19 @@ def construire():
     css = CSS_LIVRET.split("@page {")[0] + f"""
 @page {{ size: 148mm 210mm; margin: 12mm; }}
 * {{ -webkit-print-color-adjust: exact; print-color-adjust: exact; }}
-html {{ font-family: "Literata", serif; font-size: 11pt; line-height: 1.45; color: #1c2d24; }}
+html {{ font-family: "Barlow", sans-serif; font-size: 11pt; line-height: 1.45; color: #16181d; }}
 body {{ margin: 0; text-align: center; }}
-h1 {{ font-family: "Fraunces"; font-weight: 500; font-size: 22pt; color: #1c2d24; margin: 0; }}
+h1 {{ font-family: "Anton"; font-weight: 400; font-size: 22pt; text-transform: uppercase; color: #16181d; margin: 0; }}
 .consigne {{ margin: 0 auto 3mm; max-width: 112mm; }}
-.separateur {{ display: flex; align-items: center; justify-content: center; gap: 2.5mm; margin: 2mm 0 3mm; }}
-.separateur::before, .separateur::after {{ content: ""; width: 16mm; height: 0.25mm; background: linear-gradient(to right, transparent, #2e6c66); }}
-.separateur::after {{ background: linear-gradient(to left, transparent, #2e6c66); }}
-.separateur img {{ width: 6mm; }}
+.separateur {{ display: flex; align-items: center; justify-content: center; gap: 1.2mm; margin: 2.5mm 0 3mm; }}
+.separateur::before, .separateur::after {{ content: ""; width: 14mm; height: 0.45mm; background: #16181d; }}
+.separateur i {{ display: block; width: 1.5mm; height: 4.5mm; transform: skewX(-20deg); background: #16181d; }}
+.separateur i:first-of-type {{ margin-left: 1.5mm; }}
+.separateur i:last-of-type {{ margin-right: 1.5mm; }}
+.separateur i:nth-of-type(2) {{ background: #1747d6; }}
+.separateur i:nth-of-type(3) {{ background: #e8b21a; }}
 .patron {{ display: flex; justify-content: center; }}
-.signature {{ font-family: "Fraunces"; font-style: italic; font-size: 11pt; color: #1e4d48; margin-top: 2mm; }}
+.signature {{ font-style: italic; font-size: 11pt; color: #555a63; margin-top: 2mm; }}
 """
     page = (
         f'<!doctype html><html lang="fr"><head><meta charset="utf-8"><style>{css}</style></head><body>'
@@ -140,7 +143,7 @@ h1 {{ font-family: "Fraunces"; font-weight: 500; font-size: 22pt; color: #1c2d24
         '<p class="consigne">Découpe le long des traits pleins, plie le long des pointillés, puis colle '
         "les languettes à l'intérieur. Sur un dé, deux faces opposées font toujours 7.</p>"
         f'<div class="patron">{patron()}</div>'
-        f'<p class="signature">{TITRE}, une histoire par {AUTRICE}</p></body></html>'
+        f'<p class="signature">{TITRE}, une histoire par {AUTEURS}</p></body></html>'
     )
     SORTIE.parent.mkdir(exist_ok=True)
     with tempfile.TemporaryDirectory() as dossier:
