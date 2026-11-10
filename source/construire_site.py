@@ -452,8 +452,9 @@ tw-story:has(.garde) { padding-top: 0; padding-bottom: 0; }
 @media (min-width: 861px) {
   tw-story:has(.garde) { height: 100vh; overflow: hidden; }
   .garde { height: 100vh; min-height: 0; padding: 4vh 0; }
-  .garde-image img { height: 92vh; max-height: 92vh; }
-  .garde-texte { font-size: clamp(11px, 1.9vh, 18px); gap: 1.15em; }
+  .garde { grid-template-columns: minmax(0, auto) minmax(22em, 30em); gap: 3em; }
+  .garde-image img { height: 80vh; max-height: 80vh; }
+  .garde-texte { font-size: clamp(12px, 2.08vh, 20px); gap: 1.1em; }
   .garde .grand-titre { font-size: 3.7em; }
   .garde .synopsis { font-size: 0.95em; }
 }
