@@ -178,9 +178,9 @@ Le samedi, il vérifia ses lacets avant d’entrer sur le terrain. De l’autre 
 
 **Lance le dé pour découvrir le parcours d’Adam :**
 
-- 1, 3 ou 5 : découvre la suite au chapitre 8.
-- 2 ou 4 : découvre la suite au chapitre 7.
-- 6 : découvre la suite au chapitre 9.
+- 1 ou 2 : découvre la suite au chapitre 7.
+- 3 ou 4 : découvre la suite au chapitre 8.
+- 5 ou 6 : découvre la suite au chapitre 9.
 
 ## Chapitre 7. Adam, de Marseille à Paris
 
