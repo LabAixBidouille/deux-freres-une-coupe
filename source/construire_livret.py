@@ -27,7 +27,7 @@ from PIL import Image
 from pypdf import PageObject, PdfReader, PdfWriter, Transformation
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from construire_site import (AUTEURS, AVERTISSEMENT, CITATION, CONTEXTE, SYNOPSIS, TITRE,  # noqa: E402
+from construire_site import (AUTEURS, AVERTISSEMENT, AVERTISSEMENT_COURT, CITATION, CONTEXTE, SYNOPSIS, TITRE,  # noqa: E402
                              illustration, lire_chapitres, lire_choix)
 
 RACINE = Path(__file__).resolve().parent.parent
@@ -73,17 +73,18 @@ p {{ margin: 0 0 0.55em; orphans: 2; widows: 2; }}
 /* Couverture : le titre dans le blanc du haut, l'image entière jusqu'au bas de la page */
 @page couverture {{ margin: 0; @bottom-center {{ content: none; }} }}
 .couverture {{ page: couverture; position: relative; height: 185.5mm; overflow: hidden; background: #fff; }}
-.couverture img {{ position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }}
+/* L'image entière, à la largeur de la page, descendue pour que son dessin touche le bas (son blanc du bas sort
+   de la page) */
+.couverture img {{ position: absolute; left: 0; right: 0; bottom: -12.5mm; width: 100%; height: auto; }}
 /* L'image de couverture prévoit un blanc en haut pour le titre et un blanc en bas pour la mention */
-.couverture .entete {{ position: absolute; top: 7mm; left: 0; right: 0; text-align: center; padding: 0 8mm; }}
+.couverture .entete {{ position: absolute; top: 14mm; left: 0; right: 0; text-align: center; padding: 0 8mm; }}
 .couverture .surtitre {{ font-family: "Barlow Condensed"; font-weight: 700; font-size: 7pt; letter-spacing: 1.8pt;
   text-transform: uppercase; color: {BLEU}; }}
-.couverture .titre-livre {{ font-family: "Anton"; font-size: 24pt; line-height: 1.02; text-transform: uppercase;
+.couverture .titre-livre {{ font-family: "Anton"; font-size: 26pt; line-height: 1.02; text-transform: uppercase;
   color: {ENCRE}; margin: 1.2mm 0 1mm; }}
 .couverture .titre-livre span {{ display: block; color: {BLEU}; }}
 .couverture .auteurs {{ font-style: italic; font-size: 10.5pt; color: {DOUCE}; }}
-.couverture .mention {{ position: absolute; bottom: 6mm; left: 0; right: 0; text-align: center; font-style: italic;
-  font-size: 7pt; color: {GRIS}; }}
+.resume .mention {{ font-style: italic; font-size: 8.5pt; line-height: 1.4; color: {GRIS}; margin-top: 2mm; }}
 
 /* Le résumé, en page 2 */
 .resume {{ display: flex; flex-direction: column; justify-content: center; height: 155mm; text-align: center; }}
@@ -266,9 +267,10 @@ def document(pages, blanches=0):
         '<div class="entete"><div class="surtitre">Une histoire dont le lecteur est le héros</div>'
         '<div class="titre-livre">Deux frères,<span>une coupe</span></div>'
         f'<div class="auteurs">une histoire par {e(AUTEURS)}</div></div>'
-        f'<div class="mention">{MENTION_COURTE}</div></section>'
+        '</section>'
         '<section class="page-seule sans-numero"><div class="resume">'
-        + "".join(f"<p>{e(p)}</p>" for p in SYNOPSIS.split("\n\n")) + SEPARATEUR + "</div></section>"
+        + "".join(f"<p>{e(p)}</p>" for p in SYNOPSIS.split("\n\n")) + SEPARATEUR
+        + f'<p class="mention">{e(AVERTISSEMENT_COURT)}</p></div></section>'
     )
     chapitres_lus = lire_chapitres()
     cles = [cle_de(ch["nom"]) for ch in chapitres_lus]
