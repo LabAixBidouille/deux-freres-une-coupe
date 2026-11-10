@@ -39,7 +39,6 @@ LARGEUR_PAGE, HAUTEUR_PAGE = 124, 186          # mm
 A4_L, A4_H = 297 * MM, 210 * MM                  # A4 paysage, en points
 ENCRE, DOUCE, GRIS, BLEU, BLEU_FONCE, BLEU_PALE, OR = (
     "#16181d", "#555a63", "#8c9099", "#1747d6", "#0f2f9a", "#eaf0fd", "#e8b21a")
-HACHURES = "repeating-linear-gradient(-60deg, rgba(23, 71, 214, 0.30) 0 0.35mm, transparent 0.35mm 0.95mm)"
 MENTION_COURTE = "Fiction librement inspirée de l’univers du football"
 
 
@@ -74,15 +73,17 @@ p {{ margin: 0 0 0.55em; orphans: 2; widows: 2; }}
 /* Couverture : le titre dans le blanc du haut, l'image entière jusqu'au bas de la page */
 @page couverture {{ margin: 0; @bottom-center {{ content: none; }} }}
 .couverture {{ page: couverture; position: relative; height: 185.5mm; overflow: hidden; background: #fff; }}
-.couverture img {{ position: absolute; left: 0; right: 0; bottom: 0; width: 100%; height: auto; }}
-.couverture .entete {{ position: absolute; top: 12mm; left: 0; right: 0; text-align: center; padding: 0 8mm; }}
-.couverture .surtitre {{ font-family: "Barlow Condensed"; font-weight: 700; font-size: 7.5pt; letter-spacing: 1.8pt;
+.couverture img {{ position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }}
+/* L'image de couverture prévoit un blanc en haut pour le titre et un blanc en bas pour la mention */
+.couverture .entete {{ position: absolute; top: 7mm; left: 0; right: 0; text-align: center; padding: 0 8mm; }}
+.couverture .surtitre {{ font-family: "Barlow Condensed"; font-weight: 700; font-size: 7pt; letter-spacing: 1.8pt;
   text-transform: uppercase; color: {BLEU}; }}
-.couverture .titre-livre {{ font-family: "Anton"; font-size: 30pt; line-height: 1.02; text-transform: uppercase;
-  color: {ENCRE}; margin: 2.5mm 0 2mm; }}
+.couverture .titre-livre {{ font-family: "Anton"; font-size: 24pt; line-height: 1.02; text-transform: uppercase;
+  color: {ENCRE}; margin: 1.2mm 0 1mm; }}
 .couverture .titre-livre span {{ display: block; color: {BLEU}; }}
-.couverture .auteurs {{ font-style: italic; font-size: 12pt; color: {DOUCE}; }}
-.couverture .mention {{ font-style: italic; font-size: 7pt; color: {GRIS}; margin-top: 2mm; }}
+.couverture .auteurs {{ font-style: italic; font-size: 10.5pt; color: {DOUCE}; }}
+.couverture .mention {{ position: absolute; bottom: 6mm; left: 0; right: 0; text-align: center; font-style: italic;
+  font-size: 7pt; color: {GRIS}; }}
 
 /* Le résumé, en page 2 */
 .resume {{ display: flex; flex-direction: column; justify-content: center; height: 155mm; text-align: center; }}
@@ -92,7 +93,7 @@ p {{ margin: 0 0 0.55em; orphans: 2; widows: 2; }}
 .illus {{ position: relative; margin: 0 0 8mm; }}
 .illus img {{ display: block; width: 100%; height: auto; }}
 .pastille {{ position: absolute; left: 50%; bottom: 0; transform: translate(-50%, 50%) skewX(-12deg);
-  background: {BLEU}; box-shadow: 0.8mm 0.8mm 0 {ENCRE}; padding: 0.8mm 4mm 0.6mm;
+  background: {BLEU}; outline: 0 solid transparent; border-right: 0.8mm solid {ENCRE}; border-bottom: 0.8mm solid {ENCRE}; padding: 0.8mm 4mm 0.6mm;
   font-family: "Barlow Condensed"; font-weight: 700; font-size: 8.5pt; letter-spacing: 1.4pt;
   text-transform: uppercase; color: #fff; white-space: nowrap; }}
 .pastille span {{ display: inline-block; transform: skewX(12deg); }}
@@ -122,12 +123,16 @@ h1 {{ font-family: "Anton"; font-weight: 400; font-size: 19pt; line-height: 1.12
 .elan::after {{ content: " →"; color: {OR}; }}
 
 /* La case du dé : trait noir, ombre bleue, faces du dé sur des hachures bleues */
-.de {{ margin-top: 4mm; padding: 3mm 4mm 2.5mm; border: 0.5mm solid {ENCRE}; box-shadow: 1.2mm 1.2mm 0 {BLEU};
-  font-size: 10pt; line-height: 1.35; break-inside: avoid; }}
+.de {{ position: relative; margin-top: 4mm; margin-right: 1.2mm; padding: 3mm 4mm 2.5mm; border: 0.5mm solid {ENCRE};
+  isolation: isolate; font-size: 10pt; line-height: 1.35; break-inside: avoid; }}
+/* L'ombre bleue : un simple rectangle plein décalé derrière la case */
+.ombre {{ position: absolute; left: 0.7mm; top: 0.7mm; right: -1.7mm; bottom: -1.7mm; background: {BLEU}; z-index: -1; }}
+.de-fond {{ position: absolute; inset: 0; background: #fff; z-index: -1; }}
+.hachures {{ position: absolute; inset: 0; width: 100%; height: 100%; z-index: -1; }}
 .consigne {{ font-family: "Barlow Condensed"; font-weight: 700; font-size: 10.5pt; letter-spacing: 0.4pt;
   text-transform: uppercase; margin: 0 0 2mm; }}
 .tirage {{ display: grid; grid-template-columns: 15mm 1fr; gap: 3mm; align-items: center; margin: 0 0 1.6mm; }}
-.tirage b {{ text-align: center; background: {HACHURES}; padding: 0.4mm 0;
+.tirage b {{ position: relative; z-index: 0; text-align: center; padding: 0.4mm 0;
   font-family: "Barlow Condensed"; font-weight: 700; font-size: 9.5pt; color: {BLEU_FONCE}; }}
 .renvoi {{ font-family: "Barlow Condensed"; font-weight: 700; font-size: 10.5pt; letter-spacing: 0.3pt;
   text-transform: uppercase; color: {BLEU}; }}
@@ -137,11 +142,11 @@ h1 {{ font-family: "Anton"; font-weight: 400; font-size: 19pt; line-height: 1.12
 .tableau-fins .entete {{ font-family: "Barlow Condensed"; font-weight: 600; font-size: 8.5pt; line-height: 1.2; color: {DOUCE}; }}
 .tableau-fins .col {{ text-align: center; align-self: end; }}
 .tableau-fins .ligne {{ align-self: center; }}
-.tableau-fins .croisement {{ display: flex; flex-direction: column; justify-content: center; text-align: center;
-  min-height: 12mm; background: repeating-linear-gradient(-60deg, rgba(23, 71, 214, 0.16) 0 0.35mm, transparent 0.35mm 0.95mm); }}
+.tableau-fins .croisement {{ position: relative; z-index: 0; display: flex; flex-direction: column; justify-content: center;
+  text-align: center; min-height: 12mm; }}
 .tableau-fins .croisement .renvoi {{ font-size: 9.5pt; line-height: 1.15; }}
 .fin {{ text-align: center; font-family: "Anton"; font-size: 28pt; text-transform: uppercase; letter-spacing: 1pt;
-  color: {BLEU}; text-shadow: 0.7mm 0.7mm 0 {OR}; margin-top: 1mm; }}
+  color: {BLEU}; margin-top: 1mm; }}
 
 /* Pages de contexte, de l'arbre et dos */
 .contexte h2 {{ font-family: "Anton"; font-weight: 400; font-size: 15pt; text-transform: uppercase; text-align: center;
@@ -167,6 +172,17 @@ h1 {{ font-family: "Anton"; font-weight: 400; font-size: 19pt; line-height: 1.12
 """
 
 SEPARATEUR = '<div class="separateur"><i></i><i></i><i></i></div>'
+
+
+def hachures(largeur, hauteur, opacite):
+    """Hachures bleues à -60°, dessinées trait par trait (aucun motif PDF : certaines visionneuses les
+    affichent mal), dans un SVG qui remplit la case par-derrière."""
+    pas, traits, x = 0.95, [], -hauteur
+    while x < largeur + hauteur:
+        traits.append(f'<line x1="{x:.2f}" y1="{hauteur}" x2="{x + hauteur * 0.577:.2f}" y2="0"/>')
+        x += pas
+    return (f'<svg class="hachures" viewBox="0 0 {largeur} {hauteur}" preserveAspectRatio="xMidYMid slice">'
+            f'<g stroke="rgba(23,71,214,{opacite})" stroke-width="0.35">{"".join(traits)}</g></svg>')
 
 
 def e(texte):
@@ -196,9 +212,9 @@ def tableau_des_fins(consigne, conditions, pages):
         corps += f'<div class="entete ligne">{libelle}</div>'
         for adam in (True, False):
             n = cases[(aylan, adam)]
-            corps += (f'<div class="croisement"><span class="renvoi">Chapitre {n}</span>'
+            corps += (f'<div class="croisement">{hachures(40, 12, 0.2)}<span class="renvoi">Chapitre {n}</span>'
                       f'<span class="renvoi">page {pages.get(int(n), "00")}</span></div>')
-    return (f'<div class="de conditions"><p class="consigne">{e(consigne)}</p>'
+    return (f'<div class="de conditions"><span class="ombre"></span><span class="de-fond"></span><p class="consigne">{e(consigne)}</p>'
             f'<div class="tableau-fins">{corps}</div></div>')
 
 
@@ -222,8 +238,8 @@ def chapitre(ch, suivant, pages):
 
     suite = []
     if tirages:
-        suite.append(f'<div class="de"><p class="consigne">{e(consigne)}</p>' + "".join(
-            f'<div class="tirage"><b>{e(faces)}</b><span class="renvoi">{e(renvoi(n, pages))}</span></div>'
+        suite.append(f'<div class="de"><span class="ombre"></span><span class="de-fond"></span><p class="consigne">{e(consigne)}</p>' + "".join(
+            f'<div class="tirage"><b>{hachures(15, 5, 0.32)}{e(faces)}</b><span class="renvoi">{e(renvoi(n, pages))}</span></div>'
             for faces, n in tirages) + "</div>")
     elif conditions:
         suite.append(tableau_des_fins(consigne, conditions, pages))
@@ -246,11 +262,11 @@ def dessin(fichier, nom):
 def document(pages, blanches=0):
     couverture = (
         '<section class="couverture sans-numero">'
-        f'<img src="{(RACINE / "images/couverture.jpg").as_uri()}" alt="">'
+        f'<img src="{(RACINE / "images/couverture-livret.jpg").as_uri()}" alt="">'
         '<div class="entete"><div class="surtitre">Une histoire dont le lecteur est le héros</div>'
         '<div class="titre-livre">Deux frères,<span>une coupe</span></div>'
-        f'<div class="auteurs">une histoire par {e(AUTEURS)}</div>'
-        f'<div class="mention">{MENTION_COURTE}</div></div></section>'
+        f'<div class="auteurs">une histoire par {e(AUTEURS)}</div></div>'
+        f'<div class="mention">{MENTION_COURTE}</div></section>'
         '<section class="page-seule sans-numero"><div class="resume">'
         + "".join(f"<p>{e(p)}</p>" for p in SYNOPSIS.split("\n\n")) + SEPARATEUR + "</div></section>"
     )
