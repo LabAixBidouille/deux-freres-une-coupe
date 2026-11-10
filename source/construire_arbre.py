@@ -139,7 +139,10 @@ def construire():
 
     marge = []
     for premier, dernier, texte, coul in PARCOURS:
-        haut, bas = pos[premier][1] - 50, pos[dernier][1] + SOUS_TITRE + 10
+        # La bande couvre le bloc entier : des pastilles qui y entrent jusqu'au bas des titres, et son texte
+        # est centré sur ce bloc
+        entree = 100 if any(c in FINS or (p, c) in des for p, cs in renvois.items() for c in cs if c == premier) else 50
+        haut, bas = pos[premier][1] - entree, pos[dernier][1] + 92
         milieu = (haut + bas) / 2
         marge.append(f'<rect x="34" y="{haut}" width="32" height="{bas - haut}" fill="{coul}"/>'
                      f'<text transform="translate(57,{milieu}) rotate(-90)" text-anchor="middle" font-family="Anton" '

@@ -434,9 +434,8 @@ tw-story:has(.garde) { padding-top: 0; padding-bottom: 0; }
 .agrandi { position: fixed; inset: 0; z-index: 100; display: flex; align-items: center; justify-content: center; padding: 2vh 2vw; background: rgba(22, 24, 29, 0.88); cursor: zoom-out; }
 .agrandi img { max-width: 100%; max-height: 96vh; }
 
-/* Case du dé au crayon, sans cadre : les faces du dé passées en hachures bleues de crayon de couleur, au
+/* Case du dé : les faces du dé passées en hachures bleues de crayon de couleur, au
    trait un peu tremblé comme les images ; les fins au choix de la même façon */
-.de { border: none; box-shadow: none; padding: 0; background: none; margin-top: 1.8em; }
 .tirage b { position: relative; isolation: isolate; transform: none; padding: 0.05em 0.6em; background: none; }
 .tirage b::before {
   content: "";
@@ -448,22 +447,16 @@ tw-story:has(.garde) { padding-top: 0; padding-bottom: 0; }
 }
 .conditions .tirage + .tirage { border-top: none; }
 
-/* Couverture allégée : mêmes éléments, plus petits et plus espacés */
-.garde { gap: 4.5em; }
-.garde-image img { height: min(76vh, 40em); }
-.garde-texte { gap: clamp(0.9em, 2.6vh, 1.5em); }
-.garde .surtitre { font-size: 0.74em; }
-.garde .grand-titre { font-size: clamp(2.2em, 6.2vh, 3em); margin: 0.3em 0 0.3em; }
-.garde .nom-auteur { font-size: 1em; }
-.garde .synopsis { max-width: 24em; font-size: clamp(0.82em, 1.9vh, 0.9em); line-height: 1.75; color: #3d4148; }
-.garde .synopsis p, .garde .synopsis br { margin: 0; }
-.garde .commencer tw-link, .garde .commencer .enchantment-link { font-size: 1.4em; gap: 0.5em; }
-.garde .commencer tw-link::before, .garde .commencer .enchantment-link::before,
-.garde .commencer tw-link::after, .garde .commencer .enchantment-link::after { width: 0.85em; height: 0.85em; }
-.garde .separateur::before, .garde .separateur::after { width: 2.6em; }
-.garde .separateur .embleme i { width: 0.32em; height: 0.95em; }
-.garde .secondaires { font-size: 0.82em; }
-.garde .mention { font-size: 0.72em; }
+/* La couverture tient toujours dans l'écran, sans défiler : la page fait la hauteur de la fenêtre, l'image ne
+   la dépasse jamais, et le texte de droite prend une taille proportionnelle à cette hauteur */
+@media (min-width: 861px) {
+  tw-story:has(.garde) { height: 100vh; overflow: hidden; }
+  .garde { height: 100vh; min-height: 0; padding: 4vh 0; }
+  .garde-image img { height: 92vh; max-height: 92vh; }
+  .garde-texte { font-size: clamp(11px, 1.9vh, 18px); gap: 1.15em; }
+  .garde .grand-titre { font-size: 3.7em; }
+  .garde .synopsis { font-size: 0.95em; }
+}
 
 @media (max-width: 600px) {
   tw-story { font-size: 1.05em; padding: 0.8em 1em 3em; }
