@@ -155,6 +155,8 @@
 
 
 
+
+
 <meta name="robots" content="noindex, nofollow, noarchive">
 <meta content="width=device-width, initial-scale=1" name="viewport">
 <title>Deux frères, une coupe</title>
@@ -527,9 +529,8 @@ tw-story:has(.garde) { padding-top: 0; padding-bottom: 0; }
 .agrandi { position: fixed; inset: 0; z-index: 100; display: flex; align-items: center; justify-content: center; padding: 2vh 2vw; background: rgba(22, 24, 29, 0.88); cursor: zoom-out; }
 .agrandi img { max-width: 100%; max-height: 96vh; }
 
-/* Case du dé au crayon, sans cadre : les faces du dé passées en hachures bleues de crayon de couleur, au
+/* Case du dé : les faces du dé passées en hachures bleues de crayon de couleur, au
    trait un peu tremblé comme les images ; les fins au choix de la même façon */
-.de { border: none; box-shadow: none; padding: 0; background: none; margin-top: 1.8em; }
 .tirage b { position: relative; isolation: isolate; transform: none; padding: 0.05em 0.6em; background: none; }
 .tirage b::before {
   content: "";
@@ -541,22 +542,16 @@ tw-story:has(.garde) { padding-top: 0; padding-bottom: 0; }
 }
 .conditions .tirage + .tirage { border-top: none; }
 
-/* Couverture allégée : mêmes éléments, plus petits et plus espacés */
-.garde { gap: 4.5em; }
-.garde-image img { height: min(76vh, 40em); }
-.garde-texte { gap: clamp(0.9em, 2.6vh, 1.5em); }
-.garde .surtitre { font-size: 0.74em; }
-.garde .grand-titre { font-size: clamp(2.2em, 6.2vh, 3em); margin: 0.3em 0 0.3em; }
-.garde .nom-auteur { font-size: 1em; }
-.garde .synopsis { max-width: 24em; font-size: clamp(0.82em, 1.9vh, 0.9em); line-height: 1.75; color: #3d4148; }
-.garde .synopsis p, .garde .synopsis br { margin: 0; }
-.garde .commencer tw-link, .garde .commencer .enchantment-link { font-size: 1.4em; gap: 0.5em; }
-.garde .commencer tw-link::before, .garde .commencer .enchantment-link::before,
-.garde .commencer tw-link::after, .garde .commencer .enchantment-link::after { width: 0.85em; height: 0.85em; }
-.garde .separateur::before, .garde .separateur::after { width: 2.6em; }
-.garde .separateur .embleme i { width: 0.32em; height: 0.95em; }
-.garde .secondaires { font-size: 0.82em; }
-.garde .mention { font-size: 0.72em; }
+/* La couverture tient toujours dans l'écran, sans défiler : la page fait la hauteur de la fenêtre, l'image ne
+   la dépasse jamais, et le texte de droite prend une taille proportionnelle à cette hauteur */
+@media (min-width: 861px) {
+  tw-story:has(.garde) { height: 100vh; overflow: hidden; }
+  .garde { height: 100vh; min-height: 0; padding: 4vh 0; }
+  .garde-image img { height: 92vh; max-height: 92vh; }
+  .garde-texte { font-size: clamp(11px, 1.9vh, 18px); gap: 1.15em; }
+  .garde .grand-titre { font-size: 3.7em; }
+  .garde .synopsis { font-size: 0.95em; }
+}
 
 @media (max-width: 600px) {
   tw-story { font-size: 1.05em; padding: 0.8em 1em 3em; }
@@ -621,7 +616,7 @@ Aylan et Adam ont choisi d’écrire une histoire de sport, ancrée dans le mond
 
 &lt;b&gt;À son origine, il y a avant tout les idées, les personnages et les dessins d’Aylan et d’Adam.&lt;/b&gt;&lt;/div&gt;&lt;div class=&quot;table-fiches&quot;&gt;&lt;span class=&quot;titre-table&quot;&gt;Les fiches de l’atelier&lt;/span&gt;&lt;div class=&quot;miniatures&quot;&gt;&lt;figure&gt;&lt;button class=&quot;miniature&quot; type=&quot;button&quot; aria-label=&quot;Agrandir la fiche récit d’Adam&quot;&gt;&lt;img src=&quot;images/fiches/fiche_recit_adam.jpg&quot; alt=&quot;la fiche récit d’Adam&quot;&gt;&lt;/button&gt;&lt;figcaption&gt;Le récit d’Adam&lt;/figcaption&gt;&lt;/figure&gt;&lt;figure&gt;&lt;button class=&quot;miniature&quot; type=&quot;button&quot; aria-label=&quot;Agrandir la fiche personnage d’Aylan&quot;&gt;&lt;img src=&quot;images/fiches/fiche_personnage_aylan.jpg&quot; alt=&quot;la fiche personnage d’Aylan&quot;&gt;&lt;/button&gt;&lt;figcaption&gt;Une fiche personnage&lt;/figcaption&gt;&lt;/figure&gt;&lt;figure&gt;&lt;button class=&quot;miniature&quot; type=&quot;button&quot; aria-label=&quot;Agrandir la fiche situation d’Adam, avec ses choix au dé&quot;&gt;&lt;img src=&quot;images/fiches/fiche_situation_adam.jpg&quot; alt=&quot;la fiche situation d’Adam, avec ses choix au dé&quot;&gt;&lt;/button&gt;&lt;figcaption&gt;Une fiche à embranchement&lt;/figcaption&gt;&lt;/figure&gt;&lt;/div&gt;&lt;/div&gt;&lt;span class=&quot;credits&quot;&gt;Une histoire librement inspirée du récit d’Aylan et d’Adam.
 Réalisation du livre : Laboratoire d’Aix-périmentation et de Bidouille.&lt;/span&gt;&lt;span class=&quot;avertissement&quot;&gt;Une fiction librement inspirée du monde du football. Les clubs et les compétitions cités existent, mais les personnages, les situations et les paroles sont entièrement imaginaires. Ce livre n’est ni approuvé ni soutenu par ces clubs, par leurs fédérations ni par les organisateurs de ces compétitions.&lt;/span&gt;&lt;div class=&quot;secondaires&quot;&gt;[[Commencer le livre-&gt;Prologue]]&lt;/div&gt;
-&lt;/div&gt;</tw-passagedata><tw-passagedata pid="4" name="L’arbre de l’histoire" tags="" position="600,0" size="100,100">&lt;div class=&quot;arbre&quot;&gt;&lt;span class=&quot;lien-retour&quot;&gt;[[Couverture-&gt;Page de garde]]&lt;/span&gt;&lt;div class=&quot;arbre-tete&quot;&gt;&lt;h1&gt;Deux frères, une coupe&lt;/h1&gt;&lt;span class=&quot;arbre-sous-titre&quot;&gt;Tous les chemins de l’histoire imaginée par Aylan et Adam&lt;/span&gt;&lt;/div&gt;&lt;img src=&quot;images/arbre.svg?v=47100472&quot; alt=&quot;L’arbre de toutes les branches de l’histoire&quot;&gt;&lt;/div&gt;</tw-passagedata><tw-passagedata pid="5" name="Prologue" tags="" position="750,0" size="100,100">&lt;div class=&quot;page&quot;&gt;&lt;div class=&quot;cote&quot;&gt;&lt;img src=&quot;images/chapitres/prologue.jpg&quot; alt=&quot;Coup d’envoi dans le salon&quot;&gt;&lt;/div&gt;&lt;div class=&quot;texte&quot;&gt;&lt;h1 class=&quot;chapitre&quot;&gt;&lt;span class=&quot;titre&quot;&gt;Coup d’envoi dans le salon&lt;/span&gt;&lt;/h1&gt;Un soir d’été, à Aix-en-Provence, Adam et son frère Aylan regardaient la télévision avec leurs parents dans le salon. La finale de la Coupe du monde touchait à sa fin. Adam ne bougeait plus. Quand le capitaine souleva la coupe dorée, il se tourna vers Aylan.
+&lt;/div&gt;</tw-passagedata><tw-passagedata pid="4" name="L’arbre de l’histoire" tags="" position="600,0" size="100,100">&lt;div class=&quot;arbre&quot;&gt;&lt;span class=&quot;lien-retour&quot;&gt;[[Couverture-&gt;Page de garde]]&lt;/span&gt;&lt;div class=&quot;arbre-tete&quot;&gt;&lt;h1&gt;Deux frères, une coupe&lt;/h1&gt;&lt;span class=&quot;arbre-sous-titre&quot;&gt;Tous les chemins de l’histoire imaginée par Aylan et Adam&lt;/span&gt;&lt;/div&gt;&lt;img src=&quot;images/arbre.svg?v=1bff6e2f&quot; alt=&quot;L’arbre de toutes les branches de l’histoire&quot;&gt;&lt;/div&gt;</tw-passagedata><tw-passagedata pid="5" name="Prologue" tags="" position="750,0" size="100,100">&lt;div class=&quot;page&quot;&gt;&lt;div class=&quot;cote&quot;&gt;&lt;img src=&quot;images/chapitres/prologue.jpg&quot; alt=&quot;Coup d’envoi dans le salon&quot;&gt;&lt;/div&gt;&lt;div class=&quot;texte&quot;&gt;&lt;h1 class=&quot;chapitre&quot;&gt;&lt;span class=&quot;titre&quot;&gt;Coup d’envoi dans le salon&lt;/span&gt;&lt;/h1&gt;Un soir d’été, à Aix-en-Provence, Adam et son frère Aylan regardaient la télévision avec leurs parents dans le salon. La finale de la Coupe du monde touchait à sa fin. Adam ne bougeait plus. Quand le capitaine souleva la coupe dorée, il se tourna vers Aylan.
 
 « Un jour, moi aussi, je la gagnerai. »
 
