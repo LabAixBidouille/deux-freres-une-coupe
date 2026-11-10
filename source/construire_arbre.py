@@ -68,30 +68,53 @@ def titre_svg(x, y, titre):
             f'font-size="16" fill="{ENCRE}">{tspans}</text>')
 
 
-def maillot(x, y, nom):
-    c = couleur(nom)
-    forme = ("M-13 -30 L-31 -23 L-41 -5 L-29 1 L-24 -6 L-24 30 L24 30 L24 -6 L29 1 L41 -5 L31 -23 "
-             "L13 -30 Q0 -19 -13 -30 Z")
-    chiffre = "#fff" if c != OR else ENCRE
-    return (f'<g transform="translate({x},{y})"><path d="{forme}" fill="{c}" stroke="{ENCRE}" stroke-width="2.6" '
-            f'stroke-linejoin="round"/>'
-            f'<text x="0" y="22" text-anchor="middle" font-family="Anton" font-size="{30 if len(nom) == 1 else 27}" '
-            f'fill="{chiffre}">{nom}</text></g>')
+def source(fichier):
+    """Les visuels de l'arbre restent dans Sources/Visuels_arbre, hors du dépôt ; le ballon est dans images/."""
+    for dossier in (RACINE / "images", RACINE.parent / "Sources" / "Visuels_arbre"):
+        if (dossier / fichier).exists():
+            return dossier / fichier
+    raise FileNotFoundError(fichier)
 
 
-def ballon(x, y):
+def image_code(fichier, taille):
+    """L'image en PNG réduit, encodée pour être intégrée au SVG."""
     from io import BytesIO
     try:
         from PIL import Image
-        image = Image.open(RACINE / "images" / "ballon.png")
-        image.thumbnail((120, 120))
+        image = Image.open(source(fichier))
+        image.thumbnail((taille, taille))
         tampon = BytesIO()
         image.save(tampon, "PNG", optimize=True)
         donnees = tampon.getvalue()
     except ImportError:
-        donnees = (RACINE / "images" / "ballon.png").read_bytes()
-    code = base64.b64encode(donnees).decode()
-    return f'<image x="{x - 32}" y="{y - 32}" width="64" height="64" href="data:image/png;base64,{code}"/>'
+        donnees = source(fichier).read_bytes()
+    return "data:image/png;base64," + base64.b64encode(donnees).decode()
+
+
+MAILLOTS = {}
+
+
+def maillot(x, y, nom):
+    """Le maillot dessiné par Manon, avec le numéro du chapitre au milieu."""
+    fichier = {GRIS: "maillot-gris.png", BLEU: "maillot-bleu.png", OR: "maillot-dore.png"}[couleur(nom)]
+    if fichier not in MAILLOTS:
+        MAILLOTS[fichier] = image_code(fichier, 132)
+    return (f'<image x="{x - 44}" y="{y - 44}" width="88" height="88" href="{MAILLOTS[fichier]}"/>'
+            f'<text x="{x}" y="{y + 15}" text-anchor="middle" font-family="Anton" font-size="{30 if len(nom) == 1 else 27}" '
+            f'fill="#fff" stroke="{ENCRE}" stroke-width="3.2" paint-order="stroke" stroke-linejoin="round">{nom}</text>')
+
+
+def portrait(y, fichier, coul):
+    """Portrait en médaillon, posé en tête de la bande de son parcours."""
+    return (f'<clipPath id="m-{fichier[:-4]}"><circle cx="50" cy="{y}" r="38"/></clipPath>'
+            f'<circle cx="50" cy="{y}" r="40" fill="#fff"/>'
+            f'<image x="12" y="{y - 38}" width="76" height="76" href="{image_code(fichier, 152)}" '
+            f'clip-path="url(#m-{fichier[:-4]})"/>'
+            f'<circle cx="50" cy="{y}" r="39" fill="none" stroke="{coul}" stroke-width="4"/>')
+
+
+def ballon(x, y):
+    return f'<image x="{x - 32}" y="{y - 32}" width="64" height="64" href="{image_code("ballon.png", 120)}"/>'
 
 
 def pastille(x, y, texte, fond, encre):
@@ -139,15 +162,21 @@ def construire():
 
     # Les bandes de la marge se suivent : chacune couvre son bloc entier, de l'entrée de son premier chapitre
     # jusqu'au début du bloc suivant (la dernière jusqu'au bas des titres des fins), avec son texte au milieu
-    marge = []
+    marge, medaillons = [], []
     debuts = [pos[premier][1] - 60 for premier, _, _, _ in PARCOURS]
     for i, (premier, dernier, texte, coul) in enumerate(PARCOURS):
         haut = debuts[i]
         bas = debuts[i + 1] - 16 if i + 1 < len(PARCOURS) else pos[dernier][1] + 92
-        milieu = (haut + bas) / 2
+        portraits = {"1": "portrait-aylan.png", "5": "portrait-adam.png"}
+        if premier in portraits:
+            milieu = (haut + 44 + bas) / 2
+        else:
+            milieu = (haut + bas) / 2
         marge.append(f'<rect x="34" y="{haut}" width="32" height="{bas - haut}" fill="{coul}"/>'
                      f'<text transform="translate(57,{milieu}) rotate(-90)" text-anchor="middle" font-family="Anton" '
                      f'font-size="19" letter-spacing="2" fill="{"#fff" if coul != OR else ENCRE}">{texte}</text>')
+        if premier in portraits:
+            medaillons.append(portrait(haut + 4, portraits[premier], coul))
 
     noeuds = "".join((ballon(*pos[n]) if n == "Prologue" else maillot(*pos[n], n)) + titre_svg(*pos[n], titres[n])
                      for n in pos)
@@ -155,7 +184,7 @@ def construire():
         f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {LARGEUR} {HAUTEUR}" width="{LARGEUR}" height="{HAUTEUR}">'
         "<style>" + police("Anton-400.woff2", "Anton") + police("Barlow-600.woff2", "Barlow", 600)
         + police("BarlowCondensed-700.woff2", "Barlow Condensed", 700) + "</style>"
-        + "".join(marge)
+        + "".join(marge) + "".join(medaillons)
         + f'<g fill="none" stroke="{BLEU}" stroke-width="3" stroke-linejoin="miter">{"".join(traits)}</g>'
         + f'<g fill="{BLEU}">{fleches}</g>'
         + "".join(etiquettes)
