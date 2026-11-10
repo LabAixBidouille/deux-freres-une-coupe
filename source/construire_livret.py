@@ -404,22 +404,54 @@ def traits_de_coupe(dossier):
     return PdfReader(str(pdf)).pages[0]
 
 
+def en_forme(ecrivain, page):
+    """La page entière devient un objet « forme » PDF. Placée ensuite par une translation, elle emmène avec
+    elle ses motifs (hachures, ombres) : posée directement sur la feuille, une page garde ses motifs calés
+    sur la feuille et non sur elle, et les hachures se décalent."""
+    from pypdf.generic import ArrayObject, DecodedStreamObject, FloatObject, NameObject
+    forme = DecodedStreamObject()
+    forme.set_data(page.get_contents().get_data())
+    forme[NameObject("/Type")] = NameObject("/XObject")
+    forme[NameObject("/Subtype")] = NameObject("/Form")
+    forme[NameObject("/BBox")] = ArrayObject([FloatObject(v) for v in page.mediabox])
+    forme[NameObject("/Resources")] = page["/Resources"].clone(ecrivain)
+    return ecrivain._add_object(forme)
+
+
 def imposer(lecture, traits, sortie, bord_long):
+    from pypdf.generic import DecodedStreamObject, DictionaryObject, NameObject
     pages = PdfReader(str(lecture)).pages
     n = len(pages)
     assert n % 4 == 0
     x0 = (A4_L - 2 * LARGEUR_PAGE * MM) / 2
     y0 = (A4_H - HAUTEUR_PAGE * MM) / 2
     ecrivain = PdfWriter()
+    formes = {}
 
     def face(gauche, droite, retournee):
-        feuille = PageObject.create_blank_page(width=A4_L, height=A4_H)
+        feuille = ecrivain.add_blank_page(width=A4_L, height=A4_H)
         feuille.merge_page(traits)
+        objets = DictionaryObject()
+        dessin = ""
         for indice, x in ((gauche, x0), (droite, x0 + LARGEUR_PAGE * MM)):
-            feuille.merge_transformed_page(pages[indice - 1], Transformation().translate(x, y0))
+            if indice not in formes:
+                formes[indice] = en_forme(ecrivain, pages[indice - 1])
+            nom = f"/Page{indice}"
+            objets[NameObject(nom)] = formes[indice]
+            dessin += f"q 1 0 0 1 {x:.3f} {y0:.3f} cm {nom} Do Q\n"
+        ressources = feuille["/Resources"]
+        if "/XObject" in ressources:
+            ressources["/XObject"].update(objets)
+        else:
+            ressources[NameObject("/XObject")] = objets
+        ajout = DecodedStreamObject()
+        ajout.set_data(dessin.encode())
+        contenu = feuille.get_contents()
+        tout = DecodedStreamObject()
+        tout.set_data((contenu.get_data() if contenu else b"") + b"\n" + ajout.get_data())
+        feuille.replace_contents(tout)
         if retournee:
             feuille.rotate(180)
-        ecrivain.add_page(feuille)
 
     for i in range(n // 4):
         face(n - 2 * i, 1 + 2 * i, False)
