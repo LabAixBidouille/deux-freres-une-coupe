@@ -101,10 +101,11 @@ p {{ margin: 0 0 0.55em; orphans: 2; widows: 2; }}
 h1 {{ font-family: "Anton"; font-weight: 400; font-size: 19pt; line-height: 1.12; text-align: center; color: {ENCRE};
   margin: 0 0 4mm; }}
 /* Chapitres resserrés, pour qu'une fin de quelques lignes ne reste pas seule sur sa page */
-.serre {{ font-size: 10.3pt; line-height: 1.38; }}
-.serre .illus {{ margin-bottom: 6.5mm; }}
+.serre {{ line-height: 1.38; }}
+.serre .illus {{ margin-bottom: 6.5mm; width: 84%; margin-left: auto; margin-right: auto; }}
+.serre2 .illus {{ width: 68%; margin-left: auto; margin-right: auto; }}
 .serre h1 {{ font-size: 17pt; margin-bottom: 3mm; }}
-.serre2 {{ font-size: 9.8pt; line-height: 1.33; }}
+.serre2 {{ line-height: 1.33; }}
 .serre2 p {{ margin-bottom: 0.45em; }}
 /* Une page qui commence par un titre, sans image, garde un grand blanc en haut */
 .ouvre-titre::before {{ content: ""; display: block; height: 20mm; }}
@@ -266,7 +267,7 @@ def document(pages, blanches=0):
         f'<img src="{(RACINE / "images/couverture-livret.jpg").as_uri()}" alt="">'
         '<div class="entete"><div class="surtitre">Une histoire dont le lecteur est le héros</div>'
         '<div class="titre-livre">Deux frères,<span>une coupe</span></div>'
-        f'<div class="auteurs">une histoire par {e(AUTEURS)}</div></div>'
+        f'<div class="auteurs">{e(AUTEURS)}</div></div>'
         '</section>'
         '<section class="page-seule sans-numero"><div class="resume">'
         + "".join(f"<p>{e(p)}</p>" for p in SYNOPSIS.split("\n\n")) + SEPARATEUR
