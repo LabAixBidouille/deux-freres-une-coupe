@@ -390,6 +390,12 @@ tw-story:has(.garde) { padding-top: 0; padding-bottom: 0; }
 .garde .secondaires tw-link, .garde .secondaires .enchantment-link { border: none; font-weight: 600; color: var(--encre-douce); transition: color 0.2s ease; }
 .garde .secondaires tw-link:hover { color: var(--bleu); }
 .garde .secondaires .point { display: inline-block; width: 2px; height: 1em; margin: 0.15em 0.9em 0; transform: skewX(-20deg); background: var(--or); }
+/* Sur téléphone, les deux liens passent à la ligne au lieu de déborder de l'écran */
+@media (max-width: 600px) {
+  .garde .secondaires { flex-wrap: wrap; white-space: normal; gap: 0.5em 0; }
+  .garde .secondaires .point { display: none; }
+  .garde .secondaires tw-link, .garde .secondaires .enchantment-link { flex-basis: 100%; text-align: center; }
+}
 /* La mention, dans une bande de bas de page sur toute la largeur de la couverture */
 .garde { position: relative; }
 .garde .mention {
