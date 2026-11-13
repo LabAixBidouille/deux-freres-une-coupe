@@ -66,6 +66,11 @@ CSS = "\n".join([
 html {{ font-family: "Barlow", sans-serif; font-size: 11pt; line-height: 1.45; color: {ENCRE}; }}
 body {{ margin: 0; }}
 p {{ margin: 0 0 0.55em; orphans: 2; widows: 2; }}
+/* Quatrième de couverture : le QR code vers le site du livre */
+.qr {{ text-align: center; margin: 0 0 9mm; }}
+.qr img {{ display: block; width: 24mm; height: 24mm; margin: 0 auto 2mm; }}
+.qr p {{ margin: 0; font-size: 9.5pt; }}
+.qr .adresse {{ font-size: 7.5pt; opacity: 0.7; }}
 .page-seule {{ break-before: page; }}
 /* Illustration de chapitre en pleine page, à fond perdu et sans texte (tournée en paysage au besoin) */
 @page plein {{ margin: 0; @bottom-center {{ content: none; }} }}
@@ -102,16 +107,20 @@ p {{ margin: 0 0 0.55em; orphans: 2; widows: 2; }}
   font-family: "Barlow Condensed"; font-weight: 700; font-size: 8.5pt; letter-spacing: 1.4pt;
   text-transform: uppercase; color: #fff; white-space: nowrap; }}
 .pastille span {{ display: inline-block; transform: skewX(12deg); }}
+/* Numéro de chapitre posé au-dessus du titre, quand l'illustration est passée en pleine page */
+.num-titre {{ text-align: center; margin: 0 0 5mm; }}
+.num-titre .pastille {{ position: static; display: inline-block; transform: skewX(-12deg); }}
 h1 {{ font-family: "Anton"; font-weight: 400; font-size: 19pt; line-height: 1.12; text-align: center; color: {ENCRE};
   margin: 0 0 4mm; }}
-/* Chapitres resserrés, pour qu'une fin de quelques lignes ne reste pas seule sur sa page */
+/* Chapitres resserrés : seul le texte se resserre (interligne, espaces entre paragraphes), jamais sous 11 pt ;
+   les images gardent toutes la même taille */
 .serre {{ line-height: 1.38; }}
-.serre .illus {{ margin-bottom: 6.5mm; width: 84%; margin-left: auto; margin-right: auto; }}
-.serre2 .illus {{ width: 68%; margin-left: auto; margin-right: auto; }}
 .serre h1 {{ font-size: 17pt; margin-bottom: 3mm; }}
-.serre2 {{ line-height: 1.33; }}
-.serre2 p {{ margin-bottom: 0.45em; }}
-.serre2 .illus {{ width: 56%; }}
+/* Second cran : si resserrer ne suffit pas, le chapitre est aéré (plus d'interligne et d'espace entre
+   paragraphes) pour que davantage de lignes passent sur sa dernière page, qui se remplit */
+.serre2 {{ line-height: 1.58; }}
+.serre2 p {{ margin-bottom: 0.9em; }}
+.serre2 h1 {{ font-size: 19pt; margin-bottom: 4mm; }}
 /* Une page qui commence par un titre, sans image, garde un grand blanc en haut */
 .ouvre-titre::before {{ content: ""; display: block; height: 20mm; }}
 
@@ -234,6 +243,8 @@ def chapitre(ch, suivant, pages):
         # L'illustration passe en pleine page avant le chapitre (c'est la page des renvois)
         morceaux.append(f'<section class="pleine-image"><span class="marque">@@CH{cle}@@</span><img src="{image_pleine(ch).as_uri()}" alt=""></section>')
         morceaux.append(f'<section class="page-seule ouvre-titre{serre}">')
+        if ch["nom"] != "Prologue":
+            morceaux.append(f'<div class="num-titre"><span class="pastille"><span>{e(ch["numero"])}</span></span></div>')
     elif image.exists():
         largeur, hauteur = Image.open(image).size
         assert largeur > hauteur, f"Image en hauteur non prévue : {image.name}"
@@ -304,16 +315,12 @@ def document(pages, blanches=0):
         + "".join(para(p) for p in paragraphes[4:])
         + f'<p class="credits">Une histoire librement inspirée du récit d’Aylan et d’Adam.<br>Réalisation du livre : '
           "Laboratoire d’Aix-périmentation et de Bidouille.</p></section>"
-        '<section class="page-seule contexte"><h2>Les fiches de l’atelier</h2><div class="fiches">'
-        f'<img src="{(fiches / "fiche_recit_adam.jpg").as_uri()}" alt="">'
-        f'<img src="{(fiches / "fiche_personnage_aylan.jpg").as_uri()}" alt="">'
-        f'<img class="pleine" src="{(fiches / "fiche_situation_adam.jpg").as_uri()}" alt="">'
-        "</div></section>"
     )
     arbre = ('<section class="page-seule contexte arbre sans-numero"><h2>L’arbre de l’histoire</h2>'
              f'<img src="{(RACINE / "images/arbre.svg").as_uri()}" alt=""></section>')
     vides = '<section class="page-seule sans-numero">&nbsp;</section>' * blanches
     dos = ('<section class="page-seule sans-numero"><div class="dos">'
+           f'<div class="qr"><img src="{(RACINE / "images" / "qr.svg").as_uri()}" alt=""><p>Lis cette histoire en ligne</p><p class="adresse">labaixbidouille.github.io/deux-freres-une-coupe</p></div>'
            f'<p class="avertissement">{e(AVERTISSEMENT)}</p>'
            f"<p><b>{e(TITRE)}</b>, une histoire librement inspirée du récit imaginé par Aylan et Adam pendant l’atelier "
            "« La quête du curry, une histoire dont tu es le héros », à la bibliothèque Li Campaneto "
@@ -397,7 +404,7 @@ SERRES, SERRES2 = set(), set()
 # Illustrations de chapitre en pleine page (tournées en paysage au besoin) : on en ajoute, dans l'ordre de
 # PLEINES, juste assez pour que le livret tombe sur un multiple de 4 sans page blanche. L'illustration n'est
 # alors plus répétée dans le texte du chapitre.
-PLEINES = [12, 11, 7, 2]
+PLEINES = [12, 11, 7, 2, 4, 9, 13, 5, 1, 8]
 ACTIVES = []
 BLANCHES = 0
 
