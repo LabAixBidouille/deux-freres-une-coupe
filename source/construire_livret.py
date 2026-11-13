@@ -107,6 +107,7 @@ h1 {{ font-family: "Anton"; font-weight: 400; font-size: 19pt; line-height: 1.12
 .serre h1 {{ font-size: 17pt; margin-bottom: 3mm; }}
 .serre2 {{ line-height: 1.33; }}
 .serre2 p {{ margin-bottom: 0.45em; }}
+.serre2 .illus {{ width: 56%; }}
 /* Une page qui commence par un titre, sans image, garde un grand blanc en haut */
 .ouvre-titre::before {{ content: ""; display: block; height: 20mm; }}
 
@@ -309,7 +310,7 @@ def document(pages, blanches=0):
            "(bibliothèques Méjanes, Aix-en-Provence), en octobre 2026.</p><p>Réalisation du livre : Laboratoire d’Aix-périmentation et de Bidouille.</p>"
            "</div></section>")
     return (f'<!doctype html><html lang="fr"><head><meta charset="utf-8"><style>{CSS}</style></head>'
-            f"<body>{couverture}{chapitres}{contexte}{arbre}{vides}{dos}</body></html>")
+            f"<body>{couverture}{chapitres}{arbre}{contexte}{vides}{dos}</body></html>")
 
 
 def imprimer(source_html, pdf):
