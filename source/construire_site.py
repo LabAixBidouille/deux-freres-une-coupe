@@ -169,7 +169,7 @@ tw-story { overflow: clip; }
 
 /* Lien Couverture */
 .retour { max-width: 1120px; margin: 0 auto 0.6em; text-align: left; }
-.retour tw-link, .retour .enchantment-link, .lien-retour tw-link, .lien-retour .enchantment-link {
+.autres-livres, .retour tw-link, .retour .enchantment-link, .lien-retour tw-link, .lien-retour .enchantment-link {
   font-family: "Barlow Condensed", "Arial Narrow", sans-serif;
   font-weight: 600;
   font-size: 0.95em;
@@ -178,7 +178,7 @@ tw-story { overflow: clip; }
   color: var(--encre-douce);
 }
 .retour tw-link::before, .lien-retour tw-link::before { content: "← "; }
-.retour tw-link:hover, .lien-retour tw-link:hover { color: var(--bleu); }
+.autres-livres:hover, .retour tw-link:hover, .lien-retour tw-link:hover { color: var(--bleu); }
 
 tw-link, .enchantment-link { color: var(--bleu-fonce); font-weight: 600; text-decoration: none; }
 tw-link:hover, .enchantment-link:hover { color: var(--bleu); }
@@ -390,11 +390,6 @@ tw-story:has(.garde) { padding-top: 0; padding-bottom: 0; }
 .garde .secondaires tw-link, .garde .secondaires .enchantment-link { border: none; font-weight: 600; color: var(--encre-douce); transition: color 0.2s ease; }
 .garde .secondaires tw-link:hover { color: var(--bleu); }
 .garde .secondaires .point { display: inline-block; width: 2px; height: 1em; margin: 0.15em 0.9em 0; transform: skewX(-20deg); background: var(--or); }
-/* Trois liens sur une ligne quand la place le permet ; sinon le dernier trait devient un retour à la ligne */
-@media (max-width: 1300px) {
-  .garde .secondaires { flex-wrap: wrap; }
-  .garde .secondaires .point:last-of-type { flex-basis: 100%; width: auto; height: 0.5em; margin: 0; background: none; }
-}
 /* Sur téléphone, les deux liens passent à la ligne au lieu de déborder de l'écran */
 @media (max-width: 600px) {
   .garde .secondaires { flex-wrap: wrap; white-space: normal; gap: 0.5em 0; }
@@ -548,6 +543,18 @@ tw-story:has(.garde) { padding-top: 0; padding-bottom: 0; }
   .miniature img { height: 10em; }
 }
 
+
+/* Lien discret vers la page qui réunit tous les livres de l'atelier, fixé dans le coin en haut à droite de l'écran, sur la page de garde
+   (même police et même couleur que le lien « ← Couverture » des chapitres, en plus petit) */
+.garde { position: relative; }
+.garde .autres-livres { position: fixed; top: 0.9em; right: 1.2em; z-index: 3; font-size: 0.78em; text-decoration: none; letter-spacing: normal; }
+.garde .autres-livres::after { content: " →"; }
+/* Ici, à gauche, dans la marge blanche au-dessus de l'image : le surtitre occupe le haut de la colonne de droite */
+@media (min-width: 761px) { .garde .autres-livres { left: 1.6vw; right: auto; top: 0.25em; font-size: 0.72em; } }
+@media (max-width: 760px) {
+  .garde { padding-top: 2.2em !important; }
+  .garde .autres-livres { position: absolute; top: 0.5em; right: 0.4em; }
+}
 """
 
 
@@ -771,7 +778,7 @@ def illustration(nom):
 
 def passage_garde():
     return (
-        '<div class="garde"><div class="garde-image"><img src="images/couverture.jpg" '
+        '<div class="garde"><a class="autres-livres" href="https://labaixbidouille.github.io/la-quete-du-curry/" target="_top">Découvrir les autres livres</a><div class="garde-image"><img src="images/couverture.jpg" '
         'alt="Aylan et Adam dos à dos, entre la cour où ils ont commencé à jouer et un grand stade"></div>'
         '<div class="garde-texte"><div class="garde-entete">'
         '<span class="surtitre">Une histoire dont le lecteur est le héros</span>'
@@ -780,7 +787,7 @@ def passage_garde():
         f'<div class="synopsis">{SYNOPSIS}</div>'
         f'<div class="commencer">{lien("Commencer l’histoire", "Prologue")}</div>{SEPARATEUR}'
         f'<div class="secondaires">{lien("Comment est née cette histoire", "Comment est née cette histoire")}'
-        f'<span class="point"></span>{lien("L’arbre de l’histoire", "L’arbre de l’histoire")}<span class="point"></span>(link: "Les autres livres")[(goto-url: "https://labaixbidouille.github.io/la-quete-du-curry/")]</div>'
+        f'<span class="point"></span>{lien("L’arbre de l’histoire", "L’arbre de l’histoire")}</div>'
         "</div>"
         f'<span class="mention">{AVERTISSEMENT_COURT}</span></div>'
     )
