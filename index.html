@@ -190,6 +190,8 @@
 
 
 
+
+
 <meta name="robots" content="noindex, nofollow, noarchive">
 <meta content="width=device-width, initial-scale=1" name="viewport">
 <title>Deux frères, une coupe</title>
@@ -672,8 +674,13 @@ tw-story:has(.garde) { padding-top: 0; padding-bottom: 0; }
 .garde { position: relative; }
 .garde .autres-livres { position: fixed; top: 0.9em; right: 1.2em; z-index: 3; font-size: 0.78em; text-decoration: none; letter-spacing: normal; }
 .garde .autres-livres::after { content: " →"; }
-/* Ici, à gauche, dans la marge blanche au-dessus de l'image : le surtitre occupe le haut de la colonne de droite */
-@media (min-width: 761px) { .garde .autres-livres { left: 1.6vw; right: auto; top: 0.25em; font-size: 0.72em; } }
+/* Ici, à droite dans la bande de mention : l'image peut monter jusqu'en haut de l'écran sur un portable.
+   La bande garde des marges assez larges pour que son texte ne touche jamais le lien. */
+@media (min-width: 861px) {
+  .garde .mention { padding-left: max(13em, calc(50vw - 40em)) !important; padding-right: max(13em, calc(50vw - 40em)) !important; }
+  .garde .autres-livres { top: auto; bottom: 1.2vh; right: 1.4em; font-size: 0.72em; z-index: 4; }
+}
+@media (min-width: 761px) and (max-width: 860px) { .garde .autres-livres { left: 1.6vw; right: auto; top: 0.25em; font-size: 0.72em; } }
 @media (max-width: 760px) {
   .garde { padding-top: 2.2em !important; }
   .garde .autres-livres { position: absolute; top: 0.5em; right: 0.4em; }
