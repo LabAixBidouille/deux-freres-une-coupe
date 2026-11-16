@@ -169,7 +169,7 @@ tw-story { overflow: clip; }
 
 /* Lien Couverture */
 .retour { max-width: 1120px; margin: 0 auto 0.6em; text-align: left; }
-.retour tw-link, .retour .enchantment-link, .lien-retour tw-link, .lien-retour .enchantment-link {
+.autres-livres, .retour tw-link, .retour .enchantment-link, .lien-retour tw-link, .lien-retour .enchantment-link {
   font-family: "Barlow Condensed", "Arial Narrow", sans-serif;
   font-weight: 600;
   font-size: 0.95em;
@@ -178,7 +178,7 @@ tw-story { overflow: clip; }
   color: var(--encre-douce);
 }
 .retour tw-link::before, .lien-retour tw-link::before { content: "← "; }
-.retour tw-link:hover, .lien-retour tw-link:hover { color: var(--bleu); }
+.autres-livres:hover, .retour tw-link:hover, .lien-retour tw-link:hover { color: var(--bleu); }
 
 tw-link, .enchantment-link { color: var(--bleu-fonce); font-weight: 600; text-decoration: none; }
 tw-link:hover, .enchantment-link:hover { color: var(--bleu); }
@@ -542,6 +542,16 @@ tw-story:has(.garde) { padding-top: 0; padding-bottom: 0; }
   .tirage { flex-wrap: wrap; }
   .miniature img { height: 10em; }
 }
+
+/* Lien discret vers la page qui réunit tous les livres de l'atelier, en bas à droite de la page de garde */
+.garde { position: relative; }
+.autres-livres { position: absolute; right: 0.4em; bottom: 0.6em; z-index: 3; text-decoration: none; }
+.autres-livres::after { content: " →"; }
+/* Ici, en haut à droite : le bas de la couverture est occupé par la bande de mention */
+@media (min-width: 861px) { .autres-livres { top: 0.5em; bottom: auto; right: 1.6vw; font-size: 0.82em; } }
+@media (max-width: 760px) {
+  .autres-livres { position: static; order: 99; align-self: center; display: block; text-align: center; margin: 1.2em auto 0.4em; }
+}
 """
 
 
@@ -765,7 +775,7 @@ def illustration(nom):
 
 def passage_garde():
     return (
-        '<div class="garde"><div class="garde-image"><img src="images/couverture.jpg" '
+        '<div class="garde"><a class="autres-livres" href="https://labaixbidouille.github.io/la-quete-du-curry/" target="_top">Découvrir les autres livres</a><div class="garde-image"><img src="images/couverture.jpg" '
         'alt="Aylan et Adam dos à dos, entre la cour où ils ont commencé à jouer et un grand stade"></div>'
         '<div class="garde-texte"><div class="garde-entete">'
         '<span class="surtitre">Une histoire dont le lecteur est le héros</span>'
