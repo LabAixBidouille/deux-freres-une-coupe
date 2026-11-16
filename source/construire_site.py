@@ -169,7 +169,7 @@ tw-story { overflow: clip; }
 
 /* Lien Couverture */
 .retour { max-width: 1120px; margin: 0 auto 0.6em; text-align: left; }
-.autres-livres, .retour tw-link, .retour .enchantment-link, .lien-retour tw-link, .lien-retour .enchantment-link {
+.retour tw-link, .retour .enchantment-link, .lien-retour tw-link, .lien-retour .enchantment-link {
   font-family: "Barlow Condensed", "Arial Narrow", sans-serif;
   font-weight: 600;
   font-size: 0.95em;
@@ -178,7 +178,7 @@ tw-story { overflow: clip; }
   color: var(--encre-douce);
 }
 .retour tw-link::before, .lien-retour tw-link::before { content: "← "; }
-.autres-livres:hover, .retour tw-link:hover, .lien-retour tw-link:hover { color: var(--bleu); }
+.retour tw-link:hover, .lien-retour tw-link:hover { color: var(--bleu); }
 
 tw-link, .enchantment-link { color: var(--bleu-fonce); font-weight: 600; text-decoration: none; }
 tw-link:hover, .enchantment-link:hover { color: var(--bleu); }
@@ -390,6 +390,11 @@ tw-story:has(.garde) { padding-top: 0; padding-bottom: 0; }
 .garde .secondaires tw-link, .garde .secondaires .enchantment-link { border: none; font-weight: 600; color: var(--encre-douce); transition: color 0.2s ease; }
 .garde .secondaires tw-link:hover { color: var(--bleu); }
 .garde .secondaires .point { display: inline-block; width: 2px; height: 1em; margin: 0.15em 0.9em 0; transform: skewX(-20deg); background: var(--or); }
+/* Trois liens sur une ligne quand la place le permet ; sinon le dernier trait devient un retour à la ligne */
+@media (max-width: 1300px) {
+  .garde .secondaires { flex-wrap: wrap; }
+  .garde .secondaires .point:last-of-type { flex-basis: 100%; width: auto; height: 0.5em; margin: 0; background: none; }
+}
 /* Sur téléphone, les deux liens passent à la ligne au lieu de déborder de l'écran */
 @media (max-width: 600px) {
   .garde .secondaires { flex-wrap: wrap; white-space: normal; gap: 0.5em 0; }
@@ -543,15 +548,6 @@ tw-story:has(.garde) { padding-top: 0; padding-bottom: 0; }
   .miniature img { height: 10em; }
 }
 
-/* Lien discret vers la page qui réunit tous les livres de l'atelier, en bas à droite de la page de garde */
-.garde { position: relative; }
-.autres-livres { position: absolute; right: 0.4em; bottom: 0.6em; z-index: 3; text-decoration: none; }
-.autres-livres::after { content: " →"; }
-/* Ici, en haut à droite : le bas de la couverture est occupé par la bande de mention */
-@media (min-width: 861px) { .autres-livres { top: 0.5em; bottom: auto; right: 1.6vw; font-size: 0.82em; } }
-@media (max-width: 760px) {
-  .autres-livres { position: static; order: 99; align-self: center; display: block; text-align: center; margin: 1.2em auto 0.4em; }
-}
 """
 
 
@@ -775,7 +771,7 @@ def illustration(nom):
 
 def passage_garde():
     return (
-        '<div class="garde"><a class="autres-livres" href="https://labaixbidouille.github.io/la-quete-du-curry/" target="_top">Découvrir les autres livres</a><div class="garde-image"><img src="images/couverture.jpg" '
+        '<div class="garde"><div class="garde-image"><img src="images/couverture.jpg" '
         'alt="Aylan et Adam dos à dos, entre la cour où ils ont commencé à jouer et un grand stade"></div>'
         '<div class="garde-texte"><div class="garde-entete">'
         '<span class="surtitre">Une histoire dont le lecteur est le héros</span>'
@@ -784,7 +780,7 @@ def passage_garde():
         f'<div class="synopsis">{SYNOPSIS}</div>'
         f'<div class="commencer">{lien("Commencer l’histoire", "Prologue")}</div>{SEPARATEUR}'
         f'<div class="secondaires">{lien("Comment est née cette histoire", "Comment est née cette histoire")}'
-        f'<span class="point"></span>{lien("L’arbre de l’histoire", "L’arbre de l’histoire")}</div>'
+        f'<span class="point"></span>{lien("L’arbre de l’histoire", "L’arbre de l’histoire")}<span class="point"></span>(link: "Les autres livres")[(goto-url: "https://labaixbidouille.github.io/la-quete-du-curry/")]</div>'
         "</div>"
         f'<span class="mention">{AVERTISSEMENT_COURT}</span></div>'
     )
