@@ -180,6 +180,9 @@
 
 
 
+
+
+
 <meta name="robots" content="noindex, nofollow, noarchive">
 <meta content="width=device-width, initial-scale=1" name="viewport">
 <title>Deux frères, une coupe</title>
@@ -282,7 +285,7 @@ tw-story { overflow: clip; }
 
 /* Lien Couverture */
 .retour { max-width: 1120px; margin: 0 auto 0.6em; text-align: left; }
-.retour tw-link, .retour .enchantment-link, .lien-retour tw-link, .lien-retour .enchantment-link {
+.autres-livres, .retour tw-link, .retour .enchantment-link, .lien-retour tw-link, .lien-retour .enchantment-link {
   font-family: "Barlow Condensed", "Arial Narrow", sans-serif;
   font-weight: 600;
   font-size: 0.95em;
@@ -291,7 +294,7 @@ tw-story { overflow: clip; }
   color: var(--encre-douce);
 }
 .retour tw-link::before, .lien-retour tw-link::before { content: "← "; }
-.retour tw-link:hover, .lien-retour tw-link:hover { color: var(--bleu); }
+.autres-livres:hover, .retour tw-link:hover, .lien-retour tw-link:hover { color: var(--bleu); }
 
 tw-link, .enchantment-link { color: var(--bleu-fonce); font-weight: 600; text-decoration: none; }
 tw-link:hover, .enchantment-link:hover { color: var(--bleu); }
@@ -655,6 +658,16 @@ tw-story:has(.garde) { padding-top: 0; padding-bottom: 0; }
   .tirage { flex-wrap: wrap; }
   .miniature img { height: 10em; }
 }
+
+/* Lien discret vers la page qui réunit tous les livres de l'atelier, en bas à droite de la page de garde */
+.garde { position: relative; }
+.autres-livres { position: absolute; right: 0.4em; bottom: 0.6em; z-index: 3; text-decoration: none; }
+.autres-livres::after { content: " →"; }
+/* Ici, en haut à droite : le bas de la couverture est occupé par la bande de mention */
+@media (min-width: 861px) { .autres-livres { top: 0.5em; bottom: auto; right: 1.6vw; font-size: 0.82em; } }
+@media (max-width: 760px) {
+  .autres-livres { position: static; order: 99; align-self: center; display: block; text-align: center; margin: 1.2em auto 0.4em; }
+}
 </style><script role="script" id="twine-user-script" type="text/twine-javascript">
 
 // Couverture : l'image prend exactement la hauteur du bloc de texte (haut contre haut, bas contre bas), avec
@@ -737,7 +750,7 @@ document.addEventListener('keydown', function (evenement) {
   var ouvert = document.querySelector('.agrandi');
   if (ouvert && evenement.key === 'Escape') ouvert.remove();
 });
-</script><tw-passagedata pid="1" name="Bouton couverture" tags="header" position="150,0" size="100,100">(unless: (a: &quot;Page de garde&quot;, &quot;Comment est née cette histoire&quot;, &quot;L’arbre de l’histoire&quot;) contains (passage:)&#x27;s name)[&lt;div class=&quot;retour&quot;&gt;[[Couverture-&gt;Page de garde]]&lt;/div&gt;]</tw-passagedata><tw-passagedata pid="2" name="Page de garde" tags="" position="300,0" size="100,100">&lt;div class=&quot;garde&quot;&gt;&lt;div class=&quot;garde-image&quot;&gt;&lt;img src=&quot;images/couverture.jpg&quot; alt=&quot;Aylan et Adam dos à dos, entre la cour où ils ont commencé à jouer et un grand stade&quot;&gt;&lt;/div&gt;&lt;div class=&quot;garde-texte&quot;&gt;&lt;div class=&quot;garde-entete&quot;&gt;&lt;span class=&quot;surtitre&quot;&gt;Une histoire dont le lecteur est le héros&lt;/span&gt;&lt;span class=&quot;grand-titre&quot;&gt;Deux frères,&lt;span class=&quot;ligne2&quot;&gt;une coupe&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;nom-auteur&quot;&gt;Aylan et Adam&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;synopsis&quot;&gt;Dans une cour d’Aix-en-Provence, deux frères jouent au foot entre deux poubelles. Leur ballon est vieux et dégonflé, mais leurs rêves, eux, ne cessent de grandir.
+</script><tw-passagedata pid="1" name="Bouton couverture" tags="header" position="150,0" size="100,100">(unless: (a: &quot;Page de garde&quot;, &quot;Comment est née cette histoire&quot;, &quot;L’arbre de l’histoire&quot;) contains (passage:)&#x27;s name)[&lt;div class=&quot;retour&quot;&gt;[[Couverture-&gt;Page de garde]]&lt;/div&gt;]</tw-passagedata><tw-passagedata pid="2" name="Page de garde" tags="" position="300,0" size="100,100">&lt;div class=&quot;garde&quot;&gt;&lt;a class=&quot;autres-livres&quot; href=&quot;https://labaixbidouille.github.io/la-quete-du-curry/&quot; target=&quot;_top&quot;&gt;Découvrir les autres livres&lt;/a&gt;&lt;div class=&quot;garde-image&quot;&gt;&lt;img src=&quot;images/couverture.jpg&quot; alt=&quot;Aylan et Adam dos à dos, entre la cour où ils ont commencé à jouer et un grand stade&quot;&gt;&lt;/div&gt;&lt;div class=&quot;garde-texte&quot;&gt;&lt;div class=&quot;garde-entete&quot;&gt;&lt;span class=&quot;surtitre&quot;&gt;Une histoire dont le lecteur est le héros&lt;/span&gt;&lt;span class=&quot;grand-titre&quot;&gt;Deux frères,&lt;span class=&quot;ligne2&quot;&gt;une coupe&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;nom-auteur&quot;&gt;Aylan et Adam&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;synopsis&quot;&gt;Dans une cour d’Aix-en-Provence, deux frères jouent au foot entre deux poubelles. Leur ballon est vieux et dégonflé, mais leurs rêves, eux, ne cessent de grandir.
 
 Adam rêve de soulever un jour la Coupe du monde. Aylan, qui préférait autrefois le dessin, découvre à son tour le plaisir de jouer. Ensemble, ils s’entraînent, progressent et s’encouragent. Mais sur le chemin qui mène aux grands stades, tout ne se passe pas toujours comme prévu…
 
