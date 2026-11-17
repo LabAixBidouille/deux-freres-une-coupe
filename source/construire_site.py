@@ -389,6 +389,7 @@ tw-story:has(.garde) { padding-top: 0; padding-bottom: 0; }
 .garde .secondaires { gap: 0; font-size: 0.95em; flex-wrap: nowrap; white-space: nowrap; }
 .garde .secondaires tw-link, .garde .secondaires .enchantment-link { border: none; font-weight: 600; color: var(--encre-douce); transition: color 0.2s ease; }
 .garde .secondaires tw-link:hover { color: var(--bleu); }
+.garde .de-a-fabriquer { margin-top: 0.5em; }
 .garde .secondaires .point { display: inline-block; width: 2px; height: 1em; margin: 0.15em 0.9em 0; transform: skewX(-20deg); background: var(--or); }
 /* Sur téléphone, les deux liens passent à la ligne au lieu de déborder de l'écran */
 @media (max-width: 600px) {
@@ -781,6 +782,7 @@ def illustration(nom):
     return f"chapitre-{int(nom.split()[-1]):02d}"
 
 
+# Le patron du dé du livret, à télécharger si on l'a perdu (outils/)
 def passage_garde():
     return (
         '<div class="garde"><a class="autres-livres" href="https://labaixbidouille.github.io/la-quete-du-curry/" target="_top">Découvrir les autres livres</a><div class="garde-image"><img src="images/couverture.jpg" '
@@ -793,6 +795,7 @@ def passage_garde():
         f'<div class="commencer">{lien("Commencer l’histoire", "Prologue")}</div>{SEPARATEUR}'
         f'<div class="secondaires">{lien("Comment est née cette histoire", "Comment est née cette histoire")}'
         f'<span class="point"></span>{lien("L’arbre de l’histoire", "L’arbre de l’histoire")}</div>'
+        '<div class="secondaires de-a-fabriquer">(link-repeat: "Le dé à fabriquer")[(open-url: "outils/Deux_freres_une_coupe_de_a_fabriquer.pdf")]</div>'
         "</div>"
         f'<span class="mention">{AVERTISSEMENT_COURT}</span></div>'
     )
